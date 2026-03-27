@@ -1,0 +1,19 @@
+[project]
+name = "democrasci-am"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "bertopic>=0.17.4",
+    "datamapplot>=0.2.2",
+    "fastparquet>=2026.3.0",
+    "llm>=0.29",
+    "matplotlib>=3.10.8",
+    "neo4j>=6.1.0",
+    "pandas>=3.0.1",
+    "pyarrow>=23.0.1",
+    "sentence-transformers>=5.3.0",
+    "tqdm>=4.67.3",
+]
