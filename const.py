@@ -33,7 +33,8 @@ Keywords: primes Krankenkasse santé Gesundheitskosten insurance malattia costi
 topic: Healthcare costs and insurance premiums
 
 # Your task
-Sample texts from this topic:[DOCUMENTS]
+Sample texts from this topic:
+[DOCUMENTS]
 
 Keywords: [KEYWORDS]
 
