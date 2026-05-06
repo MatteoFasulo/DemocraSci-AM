@@ -9,7 +9,6 @@ dependencies = [
     "bertopic>=0.17.4",
     "datamapplot>=0.2.2",
     "fastparquet>=2026.3.0",
-    "llm>=0.29",
     "matplotlib>=3.10.8",
     "neo4j>=6.1.0",
     "nltk>=3.9.4",
@@ -19,4 +18,8 @@ dependencies = [
     "tqdm>=4.67.3",
     "nltk",
     "datasets",
+    "numpy",
+    "scikit-learn",
+    "cuml",
+    "accelerate",
 ]
