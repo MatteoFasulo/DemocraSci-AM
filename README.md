@@ -24,9 +24,12 @@ In modern democracies, the lack of transparent and accessible information about 
 ## Data
 
 - `clean_paragraphs.parquet`: cleaned paragraphs from legislative speeches ready for analysis (generated using `paragraph_extraction.py`). It is derived starting from the last 4 legislative periods (available at https://zenodo.org/records/13920293) combined with the speeches transcripts (available at the same link inside the SQL database)
-- `240102_bills_swissdomainbert2_predictions.parquet`: predictions of the SwissDomainBERT2 model for the bills (the 21 predefined bills topics)
-- `paragraph_embeddings_Qwen3-Embedding-0.6B.npy`: embeddings of the cleaned paragraphs obtained using the Qwen3-Embedding-0.6B model (available at https://huggingface.co/Qwen/Qwen3-Embedding-0.6B)
+- `240102_bills_swissdomainbert2_predictions.parquet`: predictions of the SwissDomainBERT2 model for the bills (the 21 predefined bills topics). We do not really need this file, the list is the following:
+    - ['Civil Rights', 'Technology, Communication', 'International Affairs', 'Government Operations', 'Economy', 'Education, Research', 'Culture, Arts, Religion, Sport, Entertainment', 'Public Finances, Taxation', 'Agriculture', 'Social Welfare', 'Labor', 'Health', 'National Security, Armed Forces, Defense', 'Environment', 'Energy', '(Public) Transportation', 'Finances, Financial Sector', 'Spatial Planing, Civil Engineering', 'Migration', 'Parliamentary Procedure', 'Criminal Law']
+- `paragraph_embeddings_Qwen3-Embedding-0.6B.npy`: embeddings of the cleaned paragraphs obtained using the Qwen3-Embedding-0.6B model (available at https://huggingface.co/Qwen/Qwen3-Embedding-0.6B). Git LFS had some issue while tracking this file in the repository so we might need to find another method of sharing that.
 
+## Notion
+There is a Notion page associated with this project available here: https://www.notion.so/Stance-Detection-3494ebb13c4b80b0ba17fbe2ded82c21
 
 ## Code
 
@@ -39,7 +42,7 @@ pip install -r pyproject.toml
 
 with uv:
 ```bash
-uv sync
+uv sync # should work and install all the deps
 ```
 
 ## SDSC Qwen
