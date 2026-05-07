@@ -51,6 +51,28 @@ Reference: https://towering-canid-e21.notion.site/LLM-Deployment-Usage-229891adf
 It requires to have access to the SDSC Qwen. The procedure to obtain access can be found at the reference link above. Once you have access, we will just use regular cURL requests to interact with the endpoint of vLLM.
 
 What is needed is the API Key.
+For testing the endpoint, the following curl request can be used:
+```bash
+curl -X POST https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datascience.ch/v1/chat/completions \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer <YOUR_API_KEY>" \
+-d '{ 
+  "model": "Qwen/Qwen3.5-35B-A3B-GPTQ-Int4",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hi, how are you?"
+    }
+  ],
+  "temperature": 0.7,
+  "top_p": 0.8,
+  "top_k": 20,
+  "max_tokens": 8192,
+  "presence_penalty": 1.5,
+  "chat_template_kwargs": {"enable_thinking": false}
+}'
+```
+here we used the Qwen3.5-35B-A3B-GPTQ-Int4 without thinking mode (note the **chat_template_kwargs** flags).
 
 ## Notebooks
 
