@@ -205,3 +205,16 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# numpy arrays
+*.npy
+
+# parquet files
+*.parquet
+
+# csv files
+*.csv
+
+# json/jnsonl files
+*.json
+*.jsonl
