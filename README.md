@@ -83,6 +83,35 @@ curl -X POST https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datasci
 ```
 here we use the <MODEL_NAME> without thinking mode (note the **chat_template_kwargs** flags). For text generation tasks, it is recommended to check the specific documentation of the model you are using to use the suggested parameters for generation.
 
+### [New] OpenAI Python package
+Reference: https://docs.vllm.ai/en/stable/getting_started/quickstart/#openai-chat-completions-api-with-vllm
+
+Alternatively, you can also use the OpenAI Python package to interact with the SDSC Qwen endpoint described above. You can install the package via pip:
+```bash
+pip install openai
+```
+Then, you can use the following code to generate completions:
+```python
+from openai import OpenAI
+# Set API key and API base to use vLLM's API server.
+openai_api_key = "<YOUR_API_KEY>"
+openai_api_base = "https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datascience.ch/v1/"
+
+client = OpenAI(
+    api_key=openai_api_key,
+    base_url=openai_api_base,
+)
+
+chat_response = client.chat.completions.create(
+    model="<MODEL_NAME>",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Tell me a joke."},
+    ],
+)
+print("Chat response:", chat_response)
+```
+
 ## Notebooks
 
 - `bertopic.ipynb`: notebook for the clustering and topic modelling using [BERTopic](https://maartengr.github.io/BERTopic/index.html) later refined by SDSC Qwen and then used to assign topics to the speeches paragraphs.
