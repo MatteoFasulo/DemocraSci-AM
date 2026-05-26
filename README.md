@@ -76,7 +76,7 @@ curl -X POST https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datasci
   "temperature": 0.7,
   "top_p": 0.8,
   "top_k": 20,
-  "max_tokens": 8192,
+  "max_tokens": 256,
   "presence_penalty": 1.5,
   "chat_template_kwargs": {"enable_thinking": false}
 }'
@@ -102,12 +102,25 @@ client = OpenAI(
     base_url=openai_api_base,
 )
 
+# Check which model is available in the vLLM endpoint
+models = client.models.list()
+
 chat_response = client.chat.completions.create(
     model="<MODEL_NAME>",
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Tell me a joke."},
     ],
+    temperature=0.7,
+    top_p=0.8,
+    max_tokens=256,
+    presence_penalty=1.5,
+    extra_body={
+	    "top_k": 20,
+	    "chat_template_kwargs": {
+            "enable_thinking": False
+        }
+    },
 )
 print("Chat response:", chat_response)
 ```
