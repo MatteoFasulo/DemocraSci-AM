@@ -48,16 +48,25 @@ uv sync # should work and install all the deps
 ## SDSC Qwen
 Reference: https://towering-canid-e21.notion.site/LLM-Deployment-Usage-229891adfe32804582b9efbc8288ec0e
 
-It requires to have access to the SDSC Qwen. The procedure to obtain access can be found at the reference link above. Once you have access, we will just use regular cURL requests to interact with the endpoint of vLLM.
+It requires to have access to the SDSC Qwen. The procedure to obtain access can be found at the reference link above. Once you have access, we will just use regular cURL requests to interact with the endpoint of vLLM. What is needed is the API Key.
 
-What is needed is the API Key.
-For testing the endpoint, the following curl request can be used:
+**Note**: the list of models available in the endpoint might change over time, so it is recommended to check the available models before sending the request. The list of available models can be obtained by sending a GET request to the same endpoint:
+```bash
+curl -X GET https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datascience.ch/v1/models \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer <YOUR_API_KEY>"
+```
+
+After obtaining the list of available models, you can choose the one that best suits your needs and use it in the POST request to generate completions. As of today (May 2026), the following models are available:
+- Qwen/Qwen3.6-35B-A3B-FP8
+- google/gemma-4-26B-A4B-it
+
 ```bash
 curl -X POST https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datascience.ch/v1/chat/completions \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer <YOUR_API_KEY>" \
--d '{ 
-  "model": "Qwen/Qwen3.5-35B-A3B-GPTQ-Int4",
+-d '{
+  "model": "<MODEL_NAME>",
   "messages": [
     {
       "role": "user",
@@ -72,12 +81,12 @@ curl -X POST https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datasci
   "chat_template_kwargs": {"enable_thinking": false}
 }'
 ```
-here we used the Qwen3.5-35B-A3B-GPTQ-Int4 without thinking mode (note the **chat_template_kwargs** flags).
+here we use the <MODEL_NAME> without thinking mode (note the **chat_template_kwargs** flags). For text generation tasks, it is recommended to check the specific documentation of the model you are using to use the suggested parameters for generation.
 
 ## Notebooks
 
 - `bertopic.ipynb`: notebook for the clustering and topic modelling using [BERTopic](https://maartengr.github.io/BERTopic/index.html) later refined by SDSC Qwen and then used to assign topics to the speeches paragraphs.
-- `NLI.ipynb`: notebook for the NLI-based stance detection where we load the output of the clustering phase, split at the sentence level, construct an hypothesis template for each sentence and feed it to the NLI model (mDeBERTaV3 - finetuned on XNLI) to obtain the stances of the MPs on the different topics.
+- `NLI.ipynb`: notebook for the NLI-based stance detection where we load the output of the clustering phase, construct two hypothesis templates and feed them to the NLI model (mDeBERTaV3 - finetuned on XNLI) to obtain the stances of the MPs on the different topics.
 
 ## Python Scripts
 
