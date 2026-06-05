@@ -206,12 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# numpy arrays
-*.npy
-
-# parquet files
-*.parquet
-
 # csv files
 *.csv
 

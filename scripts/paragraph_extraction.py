@@ -95,7 +95,6 @@ if __name__ == "__main__":
 
     print("Merging metadata with transcripts...")
     merged_df = merge_metadata(transcript_df, meta_df)
-    merged_df.to_parquet("speeches_with_text.parquet", index=False)
 
     print("Extracting and cleaning paragraphs...")
     df_paragraphs = get_clean_paragraphs(merged_df)
