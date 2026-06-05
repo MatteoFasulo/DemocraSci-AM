@@ -1,8 +1,10 @@
+# DB / Neo4J
 DB_FILE = "/home/matteo/Downloads/democrasci/democrasci_rdb.db"
 URI = "neo4j://127.0.0.1:7687"
 AUTH = ("neo4j", "neo4j")
 NEO4J_DB = "neo4j"
 
+# vLLM Prompts
 # From https://github.com/MaartenGr/BERTopic/blob/master/bertopic/representation/_openai.py
 DEFAULT_SYSTEM_PROMPT = (
     "You are an assistant that extracts high-level topics from texts."
