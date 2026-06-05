@@ -1,3 +1,0 @@
-*.npy* filter=lfs diff=lfs merge=lfs -text
-paragraph_embeddings_Qwen3-Embedding-0.6B.npy filter=lfs diff=lfs merge=lfs -text
-data/paragraph_embeddings_Qwen3-Embedding-0.6B.npy filter=lfs diff=lfs merge=lfs -text
