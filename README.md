@@ -3,133 +3,49 @@
 ## Project Description
 In modern democracies, the lack of transparent and accessible information about elected representatives leads to voter disillusionment with politics. To address this issue, our project aims to extract and present information about politicians’ stances in a neutral and simplified fashion for public consumption. Politicians often declare interest in specific issues and try to influence the political agenda in their favor. This behavior is known as advocacy, where politicians take positions (or stances) on issues in their political work. By leveraging advances in data science, particularly natural language processing, we analyze legislative bills and parliamentary speeches to map legislative advocacy and detect the political stances of Swiss members of parliament. The project addresses three key questions: how to map legislative advocacy; 2) how to detect political stances accurately; and 3) how to combine insights from advocacy maps to determine stance congruence of MPs.
 
-### WP1
-**Argument** **detection** and **definition** and **identification** of **policy issues** (WP1):
-- We extract **claims** and **premises** from legislative speeches and bills
-- identify **advocacy topics** through **embedding-based clustering**
-- organize them **hierarchically** to build interpretable advocacy maps.
 
+## Current Workflow
+Prerequisite: `data/speeches_with_text.csv` must already exist. The script does not build it; it consumes the preprocessed speech-level dataset produced upstream.
 
-### WP2
-**Stance** **detection** (WP2):
-- We apply **multilingual**, **target**-**specific** stance prioritization to create an order between different policy topics discussed by each MPs.
-    - This novel approach to capture stances provides a more realistic view of the phenomenon, as politicians are not often frontally again specfic topics, but rather prioritise them.
+The current CLI pipeline in `main.py` is:
 
-### WP3
-**Advocacy** **analysis** (WP3):
-- We combine advocacy and stance data within a knowledge-graph framework to construct indices of MPs’ issue engagement
-- analyze stance congruence
-- study peer influence in legislative behavior
+1. Load `data/speeches_with_text.csv`.
+2. Run `df_preprocessing()` to keep bill-related speech rows, normalize `Bill_Number`, derive `Affair_ID`, and attach bill metadata when available.
+3. Aggregate speeches by `Affair_ID` with `df_bill_metadata()` to build the bill table used for retrieval.
+4. Rank bills with `score_bills()` in `bill_paragraph_filtering.py`.
+   - bill search text is built from `title`, `keywords`, and `ideological_summary`
+   - embeddings are computed with the [`intfloat/multilingual-e5-large`](https://huggingface.co/intfloat/multilingual-e5-large) model
+   - bill embeddings are cached in `data/bill_embeddings.safetensors` and reused if the bill table fingerprint and model metadata match
+   - the cross-encoder reranker is [`BAAI/bge-reranker-v2-m3`](https://huggingface.co/BAAI/bge-reranker-v2-m3)
+   - the cross-encoder reranks the bill candidates after the dense pass
+5. Restrict the speech dataframe to speeches linked to the selected bills with `select_target_speeches()`.
+6. Rank passages with `score_paragraphs()`.
+   - paragraphs are embedded with the same E5 model
+   - the question embedding is used for dense similarity
+   - the cross-encoder reranks paragraph candidates
+   - passages above the rerank threshold are marked as relevant
+7. Run stance scoring with `score_stance()` in `stance_detection.py`.
+   - the current notebook and CLI use `--question` as the hypothesis
+   - each passage is paired with that hypothesis and scored with [`MatteoFasulo/xlm-roberta-xstance`](https://huggingface.co/MatteoFasulo/xlm-roberta-xstance)
+   - the output contains support/oppose/neutral probabilities, a label, and a confidence score
+8. Save outputs to `--output-dir`:
+   - `candidate_bills.csv`
+   - `candidate_paragraphs.csv`
+   - `stance_results.json`
+   - optionally `preprocessed_speeches.csv` and `bill_metadata.csv` when `--save-intermediate` is set
 
-## Data
+Parameter semantics:
+- `--topic` is a run label / analysis tag for the policy issue. In the current CLI it is not yet used in retrieval or stance scoring, because the pipeline currently operates on the single `--question` string for both dense retrieval and stance hypothesis construction.
+- Planned integration: `--topic` should become the policy filter / retrieval constraint in a later iteration, for example by narrowing the bill candidate pool with topic keywords, topic-specific bill metadata, or a topic-to-query expansion step before dense retrieval. That would let `--topic` drive bill selection while `--question` remains the stance hypothesis.
+- `--question` is the actual retrieval target and stance hypothesis. It should be the concrete statement or policy claim you want to test against the passages.
+- Planned integration: the retrieval stage and the stance stage currently share the same string for convenience, but these are not conceptually identical tasks. Retrieval benefits from a broader query that improves recall, while stance detection benefits from a precisely framed hypothesis. We should separate them so the retrieval query can be optimized for evidence discovery and the stance hypothesis can be phrased for the classifier.
 
-- `clean_paragraphs.parquet`: cleaned paragraphs from legislative speeches ready for analysis (generated using `paragraph_extraction.py`). It is derived starting from the last 4 legislative periods (available at https://zenodo.org/records/13920293) combined with the speeches transcripts (available at the same link inside the SQL database)
-- `paragraph_embeddings_Qwen3-Embedding-0.6B.npy`: embeddings of the cleaned paragraphs obtained using the Qwen3-Embedding-0.6B model (available at https://huggingface.co/Qwen/Qwen3-Embedding-0.6B).
-
-## Notion
-There is a Notion page associated with this project available here: https://www.notion.so/Stance-Detection-3494ebb13c4b80b0ba17fbe2ded82c21
-
-## Code
-
-Install the required packages via `pip` or `uv`:
-
-with pip:
+## Run
 ```bash
-pip install -r pyproject.toml
+python main.py \
+  --input-csv data/speeches_with_text.csv \
+  --output-dir outputs \
+  --topic "<topic>" \
+  --question "<hypothesis>"
 ```
 
-with uv:
-```bash
-uv sync # should work and install all the deps
-```
-
-## SDSC Qwen
-Reference: https://towering-canid-e21.notion.site/LLM-Deployment-Usage-229891adfe32804582b9efbc8288ec0e
-
-It requires to have access to the SDSC Qwen. The procedure to obtain access can be found at the reference link above. Once you have access, we will just use regular cURL requests to interact with the endpoint of vLLM. What is needed is the API Key.
-
-**Note**: the list of models available in the endpoint might change over time, so it is recommended to check the available models before sending the request. The list of available models can be obtained by sending a GET request to the same endpoint:
-```bash
-curl -X GET https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datascience.ch/v1/models \
--H "Content-Type: application/json" \
--H "Authorization: Bearer <YOUR_API_KEY>"
-```
-
-After obtaining the list of available models, you can choose the one that best suits your needs and use it in the POST request to generate completions. As of today (May 2026), the following models are available:
-- Qwen/Qwen3.6-35B-A3B-FP8
-- google/gemma-4-26B-A4B-it
-
-```bash
-curl -X POST https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datascience.ch/v1/chat/completions \
--H "Content-Type: application/json" \
--H "Authorization: Bearer <YOUR_API_KEY>" \
--d '{
-  "model": "<MODEL_NAME>",
-  "messages": [
-    {
-      "role": "user",
-      "content": "Hi, how are you?"
-    }
-  ],
-  "temperature": 0.7,
-  "top_p": 0.8,
-  "top_k": 20,
-  "max_tokens": 256,
-  "presence_penalty": 1.5,
-  "chat_template_kwargs": {"enable_thinking": false}
-}'
-```
-here we use the <MODEL_NAME> without thinking mode (note the **chat_template_kwargs** flags). For text generation tasks, it is recommended to check the specific documentation of the model you are using to use the suggested parameters for generation.
-
-### [New] OpenAI Python package
-Reference: https://docs.vllm.ai/en/stable/getting_started/quickstart/#openai-chat-completions-api-with-vllm
-
-Alternatively, you can also use the OpenAI Python package to interact with the SDSC Qwen endpoint described above. You can install the package via pip:
-```bash
-pip install openai
-```
-Then, you can use the following code to generate completions:
-```python
-from openai import OpenAI
-# Set API key and API base to use vLLM's API server.
-openai_api_key = "<YOUR_API_KEY>"
-openai_api_base = "https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datascience.ch/v1/"
-
-client = OpenAI(
-    api_key=openai_api_key,
-    base_url=openai_api_base,
-)
-
-# Check which model is available in the vLLM endpoint
-models = client.models.list()
-
-chat_response = client.chat.completions.create(
-    model="<MODEL_NAME>",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Tell me a joke."},
-    ],
-    temperature=0.7,
-    top_p=0.8,
-    max_tokens=256,
-    presence_penalty=1.5,
-    extra_body={
-	    "top_k": 20,
-	    "chat_template_kwargs": {
-            "enable_thinking": False
-        }
-    },
-)
-print("Chat response:", chat_response)
-```
-
-## Notebooks
-
-- `bertopic.ipynb`: notebook for the clustering and topic modelling using [BERTopic](https://maartengr.github.io/BERTopic/index.html) later refined by SDSC Qwen and then used to assign topics to the speeches paragraphs.
-- `NLI.ipynb`: notebook for the NLI-based stance detection where we load the output of the clustering phase, construct two hypothesis templates and feed them to the NLI model (mDeBERTaV3 - finetuned on XNLI) to obtain the stances of the MPs on the different topics.
-
-## Python Scripts
-
-- `const.py`: contains the constants used in the project (like some URL for the paragraph extraction and system and user prompts for the LLMs during the topic refinement step).
-- `paragraph_extraction.py`: script to extract the paragraphs from the speeches transcripts.
-- `MP_metadata.py`: script to extract the metadata of the MPs (like their name, party, etc.) from the Neo4J database.
