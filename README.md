@@ -5,11 +5,18 @@ In modern democracies, the lack of transparent and accessible information about 
 
 
 ## Current Workflow
-Prerequisite: `data/speeches_with_text.csv` must already exist. The script does not build it; it consumes the preprocessed speech-level dataset produced upstream.
+Prerequisite: `data/speeches_with_text.parquet` must already exist. The script does not build it; it consumes the preprocessed speech-level dataset produced upstream.
+
+If the large files have not been downloaded yet, run:
+```bash
+git lfs install
+git lfs pull
+```
+This will fetch `data/speeches_with_text.parquet`, which is tracked by Git LFS.
 
 The current CLI pipeline in `main.py` is:
 
-1. Load `data/speeches_with_text.csv`.
+1. Load `data/speeches_with_text.parquet`.
 2. Run `df_preprocessing()` to keep bill-related speech rows, normalize `Bill_Number`, derive `Affair_ID`, and attach bill metadata when available.
 3. Aggregate speeches by `Affair_ID` with `df_bill_metadata()` to build the bill table used for retrieval.
 4. Rank bills with `score_bills()` in `bill_paragraph_filtering.py`.
@@ -43,7 +50,7 @@ Parameter semantics:
 ## Run
 ```bash
 python main.py \
-  --input-data data/speeches_with_text.parquet \
+  --input-csv data/speeches_with_text.parquet \
   --output-dir outputs \
   --topic "<topic>" \
   --question "<hypothesis>"
