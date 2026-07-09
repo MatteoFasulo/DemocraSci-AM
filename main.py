@@ -36,7 +36,7 @@ def configure_logging() -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run bill retrieval, paragraph filtering, and stance detection.")
-    parser.add_argument("--input-csv", type=Path, default=Path("data/speeches_with_text.csv"), help="Input speech-level CSV.")
+    parser.add_argument("--input-data", type=Path, default=Path("data/speeches_with_text.parquet"), help="Input speech-level Parquet file.")
     parser.add_argument("--output-dir", type=Path, default=Path("outputs"), help="Directory for generated artifacts.")
     parser.add_argument("--topic", type=str, required=True, help="Policy topic / target query.")
     parser.add_argument("--question", type=str, required=True, help="Natural-language question for retrieval.")
@@ -54,7 +54,7 @@ def main(args: argparse.Namespace) -> None:
     output_dir: Path = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    df = pd.read_csv(args.input_csv)
+    df = pd.read_parquet(args.input_data)
     df_augmented = df_preprocessing(df)
     bill_metadata_df = df_bill_metadata(df_augmented)
     logger.info("Loaded %d speeches and %d unique bills.", len(df_augmented), len(bill_metadata_df))

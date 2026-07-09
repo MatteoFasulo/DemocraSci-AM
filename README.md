@@ -43,7 +43,7 @@ Parameter semantics:
 ## Run
 ```bash
 python main.py \
-  --input-csv data/speeches_with_text.csv \
+  --input-data data/speeches_with_text.parquet \
   --output-dir outputs \
   --topic "<topic>" \
   --question "<hypothesis>"
