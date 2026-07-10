@@ -60,7 +60,7 @@ def score_stance(
                 batch_hypotheses,
                 batch_passages,
                 truncation="only_second",
-                max_length=512,
+                max_length=1024,
                 return_tensors="pt",
                 padding=True,
             )
@@ -110,5 +110,40 @@ def score_stance(
 def save_stance_results(df: pd.DataFrame, path: str | Path) -> Path:
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(df.to_json(orient="records", force_ascii=False, indent=2), encoding="utf-8")
+
+    # Normalize the export schema without failing on partially scored frames.
+    df = df.copy()
+    df = df.rename(
+        columns={
+            "TEXT_SPAN": "passage",
+            "stance": "label",
+            "name": "MP",
+        }
+    )
+
+    expected_columns = [
+        "Speech_ID",
+        "Paragraph_ID",
+        "Affair_ID",
+        "Bill_Number",
+        "date",
+        "language",
+        "question",
+        "passage",
+        "label",
+        "stance_prob_support",
+        "stance_prob_neutral",
+        "stance_prob_oppose",
+        "MP",
+        "party",
+        "topic",
+        "rerank_score",
+    ]
+
+    for column in expected_columns:
+        if column not in df.columns:
+            df[column] = np.nan
+
+    df = df[expected_columns]
+    df.to_json(output_path, orient="records", force_ascii=False, indent=2)
     return output_path

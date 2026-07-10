@@ -39,7 +39,6 @@ The current CLI pipeline in `main.py` is:
    - `candidate_bills.csv`
    - `candidate_paragraphs.csv`
    - `stance_results.json`
-   - optionally `preprocessed_speeches.csv` and `bill_metadata.csv` when `--save-intermediate` is set
 
 Parameter semantics:
 - `--topic` is a run label / analysis tag for the policy issue. In the current CLI it is not yet used in retrieval or stance scoring, because the pipeline currently operates on the single `--question` string for both dense retrieval and stance hypothesis construction.

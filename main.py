@@ -44,14 +44,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--rerank-threshold", type=float, default=RERANK_THRESHOLD, help="Cross-encoder threshold for paragraph relevance.")
     parser.add_argument("--stance-model", type=str, default=STANCE_DETECTION_MODEL, help="Sequence-classification stance model.")
     parser.add_argument("--batch-size", type=int, default=256, help="Batch size for stance scoring.")
-    parser.add_argument("--save-intermediate", action="store_true", help="Persist intermediate bill and paragraph rankings.")
     return parser
 
 
 def main(args: argparse.Namespace) -> None:
     configure_logging()
 
-    output_dir: Path = args.output_dir
+    slugified_topic = args.topic.lower().replace(" ", "_")
+    slugified_question = args.question.lower().replace(" ", "_")
+    output_dir: Path = args.output_dir / f"{slugified_topic}_{slugified_question}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_parquet(args.input_data)
@@ -76,6 +77,7 @@ def main(args: argparse.Namespace) -> None:
     target_speeches = select_target_speeches(df_augmented, candidate_bills)
     logger.info("Selected %d target speeches.", len(target_speeches))
     paragraph_scores = score_paragraphs(
+        topic=args.topic,
         question=args.question,
         speeches_df=target_speeches,
         embedding_model=embedding_model,
@@ -98,23 +100,17 @@ def main(args: argparse.Namespace) -> None:
     )
     logger.info("Detected stances for %d paragraphs.", len(stance_results))
 
-    selected_bills_path = output_dir / "candidate_bills.csv"
-    paragraphs_path = output_dir / "candidate_paragraphs.csv"
-    stance_path = output_dir / "stance_results.json"
+    selected_bills_path = output_dir / "candidate_bills.json"
+    paragraphs_path = output_dir / "candidate_paragraphs.json"
+    stance_path = output_dir / f"{slugified_topic}_{slugified_question}.json"
+    json_export_args = {"orient": "records", "force_ascii": False, "indent": 2}
 
-    candidate_bills.to_csv(selected_bills_path, index=False)
-    paragraph_scores.to_csv(paragraphs_path, index=False)
+    candidate_bills.to_json(selected_bills_path, **json_export_args)
+    paragraph_scores.to_json(paragraphs_path, **json_export_args)
     save_stance_results(stance_results, stance_path)
     logger.info("Saved candidate bills to %s", selected_bills_path)
     logger.info("Saved scored paragraphs to %s", paragraphs_path)
     logger.info("Saved stance results to %s", stance_path)
-
-    if args.save_intermediate:
-        df_augmented.to_csv(output_dir / "preprocessed_speeches.csv", index=False)
-        bill_metadata_df.to_csv(output_dir / "bill_metadata.csv", index=False)
-        logger.info("Saved preprocessed speeches to %s", output_dir / "preprocessed_speeches.csv")
-        logger.info("Saved bill metadata to %s", output_dir / "bill_metadata.csv")
-
 
 if __name__ == "__main__":
     parser = build_parser()

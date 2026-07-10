@@ -139,7 +139,7 @@ def score_bills(
         rerank_pairs = [[question, text] for text in df["bill_search_text"].fillna("")]
         df["rerank_score"] = reranker.predict(
             rerank_pairs,
-            batch_size=64,
+            batch_size=256,
             show_progress_bar=True,
         )
         df = df.sort_values(["rerank_score", "bill_relevance_score"], ascending=False).reset_index(drop=True)
@@ -160,6 +160,7 @@ def select_target_speeches(df: pd.DataFrame, candidate_bills: pd.DataFrame) -> p
 
 
 def score_paragraphs(
+    topic: str,
     question: str,
     speeches_df: pd.DataFrame,
     embedding_model: SentenceTransformer,
@@ -182,9 +183,17 @@ def score_paragraphs(
     rerank_pairs = [[question, text] for text in candidate_passages["TEXT_SPAN"].fillna("")]
     candidate_passages["rerank_score"] = reranker.predict(
         rerank_pairs,
-        batch_size=64,
+        batch_size=256,
         show_progress_bar=True,
     )
     candidate_passages = candidate_passages.sort_values("rerank_score", ascending=False).reset_index(drop=True)
     candidate_passages["is_relevant"] = candidate_passages["rerank_score"] > threshold
+
+    # Keep format consistent
+    candidate_passages['question'] = question
+    candidate_passages['topic'] = topic
+    candidate_passages.rename(columns={
+        "language_of_text": "language",
+        "meeting_date": "date",
+    }, inplace=True)
     return candidate_passages
