@@ -209,3 +209,6 @@ __marimo__/
 # json/jnsonl files
 *.json
 *.jsonl
+
+# csv
+*.csv
