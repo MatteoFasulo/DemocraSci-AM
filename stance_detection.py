@@ -22,10 +22,10 @@ def load_stance_classifier(model_name: str = STANCE_DETECTION_MODEL) -> tuple[Au
 def _label_map(model: AutoModelForSequenceClassification) -> dict[int, str]:
     labels = {int(idx): str(label).strip().lower() for idx, label in model.config.id2label.items()}
     if all(label.startswith("label_") for label in labels.values()):
-        if len(labels) == 3:
-            return {0: "contradiction", 1: "neutral", 2: "entailment"}
         if len(labels) == 2:
             return {0: "against", 1: "favor"}
+        else:
+            raise ValueError(f"Unexpected label format for binary stance model: {labels}")
     return labels
 
 
@@ -38,7 +38,7 @@ def _pick_label(label_map: dict[int, str], candidates: tuple[str, ...]) -> int |
 
 def score_stance(
     df: pd.DataFrame,
-    hypothesis: str,
+    stance_claim: str,
     tokenizer: AutoTokenizer,
     model: AutoModelForSequenceClassification,
     device: torch.device,
@@ -49,7 +49,7 @@ def score_stance(
 
     scored = df.copy().reset_index(drop=True)
     passages = scored["TEXT_SPAN"].fillna("").astype(str).tolist()
-    hypotheses = [hypothesis for _ in passages]
+    hypotheses = [stance_claim for _ in passages]
 
     probs = []
     with torch.no_grad():
@@ -59,8 +59,8 @@ def score_stance(
             encoded = tokenizer(
                 batch_hypotheses,
                 batch_passages,
-                truncation="only_second",
-                max_length=1024,
+                truncation="only_second", # Truncate only the passage (second sequence) to preserve the stance claim (first sequence).
+                max_length=512,
                 return_tensors="pt",
                 padding=True,
             )
@@ -70,8 +70,8 @@ def score_stance(
 
     probs_arr = np.vstack(probs)
     labels = _label_map(model)
-    support_id = _pick_label(labels, ("entailment", "favor", "favour", "support", "supports"))
-    oppose_id = _pick_label(labels, ("contradiction", "against", "oppose", "opposes"))
+    support_id = _pick_label(labels, ("favor",))
+    oppose_id = _pick_label(labels, ("against",))
     neutral_id = _pick_label(labels, ("neutral",))
 
     if support_id is None or oppose_id is None:
@@ -111,7 +111,6 @@ def save_stance_results(df: pd.DataFrame, path: str | Path) -> Path:
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Normalize the export schema without failing on partially scored frames.
     df = df.copy()
     df = df.rename(
         columns={
@@ -128,7 +127,7 @@ def save_stance_results(df: pd.DataFrame, path: str | Path) -> Path:
         "Bill_Number",
         "date",
         "language",
-        "question",
+        "retrieval_query",
         "passage",
         "label",
         "stance_prob_support",
