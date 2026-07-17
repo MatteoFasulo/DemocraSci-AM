@@ -2,12 +2,14 @@
 
 ## Workflow
 
-Prerequisite: `data/speeches_with_text.parquet` must already exist. The project does not build it; it consumes the preprocessed speech-level dataset produced upstream.
+I managed to upload the full dataset here in GitHub. I first compressed the .parquet file into a .gz file, then split it into 3 parts to avoid GitHub's 100MB file size limit. You can reconstruct the original .parquet file with the following commands:
 
-If the large files have not been downloaded yet, run:
 ```bash
-git lfs install
-git lfs pull
+# We first concatenate the 3 parts into a single .gz file.
+cat data/speeches_with_text.gz.part_* > data/speeches_with_text.gz
+
+# Then decompress the .gz file into a .parquet file.
+gunzip < "data/speeches_with_text.gz" > "data/speeches_with_text.parquet"
 ```
 
 The current CLI in `main.py` works like this:
