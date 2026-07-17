@@ -29,13 +29,6 @@ def _label_map(model: AutoModelForSequenceClassification) -> dict[int, str]:
     return labels
 
 
-def _pick_label(label_map: dict[int, str], candidates: tuple[str, ...]) -> int | None:
-    for idx, label in label_map.items():
-        if label in candidates:
-            return idx
-    return None
-
-
 def score_stance(
     df: pd.DataFrame,
     stance_claim: str,
@@ -48,7 +41,13 @@ def score_stance(
         return df.copy()
 
     scored = df.copy().reset_index(drop=True)
-    passages = scored["TEXT_SPAN"].fillna("").astype(str).tolist()
+    # Accept serialized candidate files that call the corpus text "passage".
+    text_column = "text" if "text" in scored.columns else "passage" if "passage" in scored.columns else None
+    if text_column is None:
+        raise ValueError("Stance scoring requires a 'text' or 'passage' column")
+    passages = scored[text_column].fillna("").astype(str).tolist()
+    if "text" not in scored.columns:
+        scored["text"] = passages
     hypotheses = [stance_claim for _ in passages]
 
     probs = []
@@ -70,9 +69,10 @@ def score_stance(
 
     probs_arr = np.vstack(probs)
     labels = _label_map(model)
-    support_id = _pick_label(labels, ("favor",))
-    oppose_id = _pick_label(labels, ("against",))
-    neutral_id = _pick_label(labels, ("neutral",))
+    label_ids = {label: idx for idx, label in labels.items()}
+    support_id = label_ids.get("favor")
+    oppose_id = label_ids.get("against")
+    neutral_id = label_ids.get("neutral")
 
     if support_id is None or oppose_id is None:
         raise ValueError(f"Could not map stance labels from model config: {labels}")
@@ -112,19 +112,30 @@ def save_stance_results(df: pd.DataFrame, path: str | Path) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     df = df.copy()
+
+    # Different input datasets use different speaker-name fields. Coalesce
+    # them before renaming so multiple source columns never become duplicate
+    # ``MP`` columns (which pandas cannot serialize as records).
+    name_columns = [
+        column
+        for column in ("MP", "name", "speaker_name", "speaker_full_name")
+        if column in df.columns
+    ]
+    if name_columns:
+        df["MP"] = df[name_columns].replace("", np.nan).bfill(axis=1).iloc[:, 0]
+
     df = df.rename(
         columns={
-            "TEXT_SPAN": "passage",
+            "text": "passage",
             "stance": "label",
-            "name": "MP",
         }
     )
 
     expected_columns = [
-        "Speech_ID",
-        "Paragraph_ID",
+        "speech_id",
+        "paragraph_id",
         "Affair_ID",
-        "Bill_Number",
+        "bill_number",
         "date",
         "language",
         "retrieval_query",

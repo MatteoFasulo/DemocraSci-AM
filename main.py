@@ -11,6 +11,8 @@ from typing import Any
 import click
 import pandas as pd
 import torch
+from huggingface_hub.utils import disable_progress_bars
+from transformers.utils import logging as transformers_logging
 
 from bill_paragraph_filtering import (
     load_reranker_model,
@@ -33,6 +35,13 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def configure_logging() -> None:
+    # Keep pipeline milestones visible without flooding the terminal with
+    # Hugging Face download and inference progress output.
+    disable_progress_bars()
+    transformers_logging.set_verbosity_warning()
+    for logger_name in ("huggingface_hub", "sentence_transformers", "transformers"):
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(levelname)s | %(message)s",
@@ -100,7 +109,11 @@ def cli(
     logger.info("Writing run artifacts to %s", run_dir)
 
     raw = pd.read_parquet(input_data)
+    logger.info("Loaded %d rows from %s", len(raw), input_data)
+
     speeches = df_preprocessing(raw)
+    logger.info("Preprocessed %d rows into %d paragraphs", len(raw), len(speeches))
+
     bills = df_bill_metadata(speeches)
     logger.info("Prepared %d paragraphs and %d bills", len(speeches), len(bills))
 
@@ -112,6 +125,8 @@ def cli(
         embedding_model=embedding_model,
         top_k_bills=N_TOP_BILLS,
     )
+    save_records(candidate_bills, run_dir / "candidate_bills.json")
+
     target_speeches = select_target_speeches(speeches, candidate_bills)
     passages_before_threshold, passages = score_paragraphs(
         topic=topic,
@@ -122,6 +137,8 @@ def cli(
         dense_pool_size=paragraph_dense_pool,
         batch_size=batch_size,
     )
+    save_records(passages_before_threshold, run_dir / "candidate_passages_before_threshold.json")
+    save_records(passages, run_dir / "candidate_passages.json")
 
     tokenizer, stance_model_object, stance_device = load_stance_classifier()
     stance_results = score_stance(
@@ -132,10 +149,6 @@ def cli(
         device=stance_device,
         batch_size=batch_size,
     )
-
-    save_records(candidate_bills, run_dir / "candidate_bills.json")
-    save_records(passages_before_threshold, run_dir / "candidate_passages_before_threshold.json")
-    save_records(passages, run_dir / "candidate_passages.json")
     save_stance_results(stance_results, run_dir / "stance_predictions.json")
 
     config = {
