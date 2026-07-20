@@ -1,0 +1,20 @@
+[
+  {
+    "speech_id":129388,
+    "paragraph_id":1,
+    "Affair_ID":"20080409",
+    "bill_number":8.409,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Migrant workers are far more criminal than Swiss citizens.",
+    "passage":"Herr Fehr, Sie haben ausgeführt, Sie seien der Ansicht, dass eingebürgerte Ausländer vermehrt straffällig würden und insbesondere öfter, als andere Schweizerinnen und Schweizer schwere Gewalttaten verüben würden. Ich muss Ihnen sagen: Meines Wissens gibt es dazu keine Statistik. Haben Sie da irgendein geheimes Forschungsprojekt konsultiert, das der Strafrechtswissenschaft noch nicht bekannt ist, oder könnte es sein, dass das einfach eine polemische Unterstellung ist?",
+    "label":"OPPOSE",
+    "stance_prob_support":0.130723238,
+    "stance_prob_neutral":0.0,
+    "stance_prob_oppose":0.8692768216,
+    "MP":"Jositsch Daniel",
+    "party":"SP",
+    "topic":"Migration",
+    "rerank_score":0.4773469567
+  }
+]

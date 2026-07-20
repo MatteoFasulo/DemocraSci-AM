@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-07-17T13:47:51.169585+00:00",
+  "device": "cuda",
+  "config": {
+    "input_data": "data/speeches_with_text.parquet",
+    "run_name": "adoption-foreign-countries",
+    "topic": "Social Welfare",
+    "retrieval_query": "Should adoptions of babies and children from foreign countries be prohibited?",
+    "stance_claim": "Should adoptions of babies and children from foreign countries be prohibited?",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "intfloat/multilingual-e5-large",
+    "stance_model": "MatteoFasulo/xlm-roberta-xstance"
+  },
+  "counts": {
+    "raw_rows": 666691,
+    "eligible_paragraphs": 171230,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 0,
+    "stance_predictions": 0
+  }
+}
