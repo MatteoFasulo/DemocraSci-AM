@@ -1,3 +1,10 @@
+"""Prepare parliamentary speech data and enrich bills with OpenParldata metadata.
+
+The public pipeline is ``raw speech dataframe -> df_preprocessing ->
+df_bill_metadata``. Metadata is cached locally so normal pipeline runs do not
+repeatedly call the OpenParldata API.
+"""
+
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -12,11 +19,11 @@ from typing import Any, Iterable
 import pandas as pd
 from tqdm import tqdm
 
-
 METADATA_PATH = Path("data/bill_metadata_cache.json")
 DEFAULT_BILL_TYPES = ("Motion", "Parliamentary Initiative")
 
 def fetch_bill_metadata(affair_id: str) -> dict[str, str] | None:
+    """Fetch German bill texts and source URLs for one OpenParldata affair ID."""
     URL = f"https://api.openparldata.ch/v1/affairs/?search={affair_id}"
     response = requests.get(URL, headers={"Accept": "application/json"}, timeout=20)
     if not response.ok:
@@ -66,7 +73,11 @@ def fetch_bill_metadata(affair_id: str) -> dict[str, str] | None:
 
 
 def build_bill_metadata_cache(df: pd.DataFrame, path: Path = METADATA_PATH) -> None:
-    """Fetch and persist metadata for every bill when the cache is absent."""
+    """Fetch and persist metadata for every bill when the cache is absent.
+
+    Fetches are concurrent because this is an I/O-bound operation. Existing
+    cache files are treated as authoritative and are not refreshed implicitly.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         return
@@ -133,11 +144,11 @@ def df_preprocessing(
     bill_types: Iterable[str] = DEFAULT_BILL_TYPES,
     metadata_path: Path = METADATA_PATH,
 ) -> pd.DataFrame:
-    """
-    Preprocess the bill DataFrame by filtering, cleaning, and enriching with metadata.
-    - Filters rows based on specified bill types.
-    - Cleans text fields and normalizes bill identifiers.
-    - Maps Affair_IDs to metadata from a JSON file.
+    """Filter speech rows, clean text, and attach cached bill metadata.
+
+    Rows are retained when their ``bill_labels`` match ``bill_types`` and both
+    ``bill_number`` and ``text`` are present. Metadata is joined by ``Affair_ID``;
+    missing API metadata is represented by empty fields rather than discarded.
     """
     filtered = df[df["bill_labels"].isin(tuple(bill_types))]
     filtered = filtered.dropna(subset=["bill_number", "text"]).copy().reset_index(drop=True)
@@ -165,10 +176,11 @@ def df_preprocessing(
 
 
 def df_bill_metadata(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Aggregate bill metadata from the preprocessed DataFrame.
-    - Groups by Affair_ID and collects relevant fields.
-    - Cleans and combines text fields for search purposes.
+    """Aggregate one searchable record per bill.
+
+    ``bill_search_text`` intentionally combines only the German bill title and
+    German statutory text. This is the text embedded for bill-level retrieval;
+    speech paragraphs are retrieved in the next stage.
     """
     bill_meta = (
         df.dropna(subset=["Affair_ID"])

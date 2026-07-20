@@ -1,3 +1,10 @@
+"""Run the fine-tuned XLM-RoBERTa stance classifier on evidence passages.
+
+The model configuration is the source of truth for label IDs. Binary-model
+uncertainty is represented by the stored support/oppose margin rather than
+silently relabeled as a trained neutral class.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -9,8 +16,8 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from const import STANCE_DETECTION_MODEL
 
-
 def load_stance_classifier(model_name: str = STANCE_DETECTION_MODEL) -> tuple[AutoTokenizer, AutoModelForSequenceClassification, torch.device]:
+    """Load the tokenizer and classifier, selecting CUDA when available."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -19,14 +26,12 @@ def load_stance_classifier(model_name: str = STANCE_DETECTION_MODEL) -> tuple[Au
     return tokenizer, model, device
 
 
-def _label_map(model: AutoModelForSequenceClassification) -> dict[int, str]:
-    labels = {int(idx): str(label).strip().lower() for idx, label in model.config.id2label.items()}
-    if all(label.startswith("label_") for label in labels.values()):
-        if len(labels) == 2:
-            return {0: "against", 1: "favor"}
-        else:
-            raise ValueError(f"Unexpected label format for binary stance model: {labels}")
-    return labels
+def label_ids(model: AutoModelForSequenceClassification) -> dict[str, int]:
+    """Return ``model.config.label2id`` with normalized label names."""
+    return {
+        str(label).strip().lower(): int(idx)
+        for label, idx in model.config.label2id.items()
+    }
 
 
 def score_stance(
@@ -37,6 +42,12 @@ def score_stance(
     device: torch.device,
     batch_size: int = 32,
 ) -> pd.DataFrame:
+    """Score passages against a stance claim in batches.
+
+    The claim is the first sequence and the passage is the second sequence;
+    only the passage is truncated. The result preserves input columns and adds
+    probabilities, margin, predicted stance, confidence, and hypothesis.
+    """
     if df.empty:
         return df.copy()
 
@@ -68,18 +79,22 @@ def score_stance(
             probs.append(torch.softmax(logits, dim=-1).detach().cpu().numpy())
 
     probs_arr = np.vstack(probs)
-    labels = _label_map(model)
-    label_ids = {label: idx for idx, label in labels.items()}
-    support_id = label_ids.get("favor")
-    oppose_id = label_ids.get("against")
-    neutral_id = label_ids.get("neutral")
 
+    configured_labels = label_ids(model)
+    support_id = configured_labels.get("favor")
+    oppose_id = configured_labels.get("against")
+    neutral_id = configured_labels.get("neutral")
     if support_id is None or oppose_id is None:
-        raise ValueError(f"Could not map stance labels from model config: {labels}")
+        raise ValueError(
+            "Model config must define 'favor' and 'against' labels; "
+            f"found {model.config.label2id}"
+        )
 
-    scored["stance_prob_support"] = probs_arr[:, support_id]
     scored["stance_prob_oppose"] = probs_arr[:, oppose_id]
-    scored["stance_prob_neutral"] = probs_arr[:, neutral_id] if neutral_id is not None else 0.0
+    scored["stance_prob_support"] = probs_arr[:, support_id]
+    scored["stance_prob_neutral"] = (
+        probs_arr[:, neutral_id] if neutral_id is not None else 0.0
+    )
     scored["stance_margin"] = scored["stance_prob_support"] - scored["stance_prob_oppose"]
 
     predicted = probs_arr.argmax(axis=1)
@@ -108,6 +123,7 @@ def score_stance(
 
 
 def save_stance_results(df: pd.DataFrame, path: str | Path) -> Path:
+    """Serialize stance predictions using the stable dataset output schema."""
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 

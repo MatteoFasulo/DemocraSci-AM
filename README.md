@@ -1,8 +1,29 @@
 # MappingDemocraSci
 
-## Workflow
+MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swiss parliamentary speech. It retrieves bills with high recall, narrows their paragraphs with a cross-encoder, and applies a fine-tuned XLM-RoBERTa stance classifier to the retained evidence.
 
-I managed to upload the full dataset here in GitHub. I first compressed the .parquet file into a .gz file, then split it into 3 parts to avoid GitHub's 100MB file size limit. You can reconstruct the original .parquet file with the following commands:
+## Pipeline overview
+
+```text
+speech parquet -> preprocessing and bill metadata
+              -> E5 bill retrieval (top 50)
+              -> E5 paragraph dense pool
+              -> BGE paragraph reranking
+              -> thresholded evidence
+              -> XLM-R stance prediction
+```
+
+Bill retrieval is the recall stage: bill search text combines the German bill title and statutory text. Paragraph reranking is the precision stage: it selects passages that address the query more closely before stance scoring. The unthresholded pool is always saved for threshold evaluation.
+
+## Setup and data
+
+The project requires Python 3.12 or newer. Install dependencies with:
+
+```bash
+pip install -e .
+```
+
+The CLI consumes `data/speeches_with_text.parquet`; it does not generate this file. If the split assets are available, reconstruct it with:
 
 ```bash
 # We first concatenate the 3 parts into a single .gz file.
@@ -12,17 +33,16 @@ cat data/speeches_with_text.gz.part_* > data/speeches_with_text.gz
 gunzip < "data/speeches_with_text.gz" > "data/speeches_with_text.parquet"
 ```
 
-The current CLI in `main.py` works like this:
+## Detailed pipeline
 
-1. Load `data/speeches_with_text.parquet`.
-2. Run `df_preprocessing()` to keep bill-related speech rows, clean the speech text, and attach bill metadata when available.
-3. Aggregate speeches by `Affair_ID` with `df_bill_metadata()` to build the bill table used for retrieval. Each bill's search text combines its German bill title (`bill_title_de`) and statutory text (`statutory_text`).
-4. Rank bills with the multilingual E5 embedding model and keep the fixed top 50 bills (by means of cosine similarity) for the next step. This passage needs to have hich recall, meaning that we want to keep as many relevant bills as possible, even if it means including some unrelated ones that are on-topic but potentially unrelated to the exact stance claim. The next step will filter out the unrelated ones.
-5. Restrict speeches to those linked to the selected bills.
-6. Rank passages with the BGE cross-encoder, save the full dense pool, then filter out passages with `rerank_score < RERANK_THRESHOLD`. This step needs high precision, meaning that we want to keep only the passages that are highly relevant to the stance claim. Given that we have already restricted the candidate passages to those linked to the top 50 bills, we can afford to be more selective here.
-7. Run stance scoring with the fine-tuned `MatteoFasulo/xlm-roberta-xstance` model.
+1. `df_preprocessing()` filters bill-related rows, cleans text, and attaches cached OpenParldata metadata by `Affair_ID`.
+2. `df_bill_metadata()` aggregates one record per bill. `bill_search_text` contains `bill_title_de` plus `statutory_text`.
+3. `score_bills()` embeds the query and bill text with `intfloat/multilingual-e5-large`, ranks by cosine similarity, and keeps `N_TOP_BILLS` (50).
+4. `select_target_speeches()` restricts the paragraph corpus to the selected bills. E5 similarity forms the configurable dense pool.
+5. `score_paragraphs()` reranks that pool with `BAAI/bge-reranker-v2-m3`, saves all scores, and filters on `RERANK_THRESHOLD` (currently `0.4`).
+6. `score_stance()` compares each retained passage with the stance claim using `MatteoFasulo/xlm-roberta-xstance`. It outputs support/oppose probabilities and their margin; binary uncertainty is not a trained neutral class.
 
->Note: `--topic` is required and must be one of the 21 predefined topics in `const.py`. If `--stance-claim` is omitted, it defaults to `--retrieval-query` meaning that we use the same text for both retrieval and stance scoring. If you want to use a different stance claim, you can provide it with `--stance-claim`.
+`--topic` must be one of the 21 topics in `const.py`. If `--stance-claim` is omitted, the retrieval query is used for stance scoring as well.
 
 ## Outputs
 
@@ -54,3 +74,26 @@ streamlit run dashboard.py
 ```
 
 Enter a retrieval query, select a topic, and optionally provide a separate stance claim. The dashboard writes the same JSON artifacts and manifest as the CLI under the configured output directory.
+
+## Human evaluation
+
+TBD via streamlit dashboard.
+
+## Docker
+
+The image for RunAI is available on GitHub Container Registry at `ghcr.io/matteofasulo/democrasci-am:latest`.
+
+To pull the image from GitHub Container Registry, run:
+
+```bash
+docker pull ghcr.io/matteofasulo/democrasci-am:latest
+```
+
+### Development
+
+To create the image needed for the workflow, run:
+
+```bash
+docker build --no-cache --pull -f Dockerfile -t ghcr.io/matteofasulo/democrasci-am:latest .
+docker push ghcr.io/matteofasulo/democrasci-am:latest
+```
