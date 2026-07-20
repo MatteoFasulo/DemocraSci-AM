@@ -18,7 +18,6 @@ ARG BASE_IMAGE=nvcr.io/nvidia/pytorch:25.06-py3
 # ----------------------------------------------------------------
 FROM python:3.12-slim AS generator
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-RUN uv pip compile pyproject.toml -o requirements.txt
 COPY requirements.txt /build/requirements.txt
 RUN uv pip compile \
     --python-version 3.12 \
@@ -32,8 +31,8 @@ FROM ${BASE_IMAGE} AS runtime
 
 ARG PYTHON_VERSION=3.12
 ARG APP_USER=appuser
-ARG APP_UID=1000
-ARG APP_GID=1000
+ARG APP_UID=1234
+ARG APP_GID=1234
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Persist APP_USER as env var so the entrypoint can read it at runtime
@@ -47,6 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     git \
     screen \
+    nano \
     vim \
     htop \
     rsync \
