@@ -15,15 +15,35 @@ speech parquet -> preprocessing and bill metadata
 
 Bill retrieval is the recall stage: bill search text combines the German bill title and statutory text. Paragraph reranking is the precision stage: it selects passages that address the query more closely before stance scoring. The unthresholded pool is always saved for threshold evaluation.
 
+## RunAI
+
+Image is based on `nvcr.io/nvidia/pytorch:25.06-py3` with 1 GPU with 20% of its memory (~16GB of A100). Run the following command to submit a job:
+
+```bash
+runai workspace submit <JOB_NAME> -i nvcr.io/nvidia/pytorch:25.06-py3 --gpu-request-type portion --gpu-portion-request 0.20 --gpu-devices-request 1
+```
+
+To expose the SSH port and connect to the workspace, run:
+
+```bash
+kubectl port-forward "pod/<JOB_NAME>-0-0" 2222:22 -n "runai-politperformance-<YOUR_USER>"
+```
+
+then connect in interactive mode with:
+
+```bash
+ssh root@localhost -p 2222
+```
+
 ## Setup and data
 
 The project requires Python 3.12 or newer. Install dependencies with:
 
 ```bash
-pip install -e .
+pip install --break-system-packages sentence-transformers streamlit openai
 ```
 
-The CLI consumes `data/speeches_with_text.parquet`; it does not generate this file. If the split assets are available, reconstruct it with:
+The CLI consumes `data/speeches_with_text.parquet` which must be generated beforehand. To reassemble the original dataset from the 3 parts, run:
 
 ```bash
 # We first concatenate the 3 parts into a single .gz file.
@@ -79,7 +99,9 @@ Enter a retrieval query, select a topic, and optionally provide a separate stanc
 
 TBD via streamlit dashboard.
 
-## Docker
+## Docker (broken)
+
+**NOTE:** The Dockerfile is currently broken due to an issue with SSH interactive sessions.
 
 The image for RunAI is available on GitHub Container Registry at `ghcr.io/matteofasulo/democrasci-am:latest`.
 
