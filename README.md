@@ -23,7 +23,7 @@ flowchart TD
 Let $(q)$ be the retrieval query. For each bill $(b_i)$, the searchable text is
 
 $$
-x_i = \text{bill\_title\_de}_i \,:: \text{statutory\_text}_i,
+x_i = \text{Bill-Title-DE}_i \,:: \text{Statutory-text}_i,
 $$
 
 where $(::)$ denotes concatenation.
@@ -48,7 +48,7 @@ The candidate bill set is the top $(K=50)$ bills ranked by
 this score:
 
 $$
-\mathcal{B}_K(q) = \operatorname{TopK}_{b_i}\; s_{\mathrm{bill}}(q,b_i).
+\mathcal{B}_K(q) = \text{TopK}_{b_i}\ s_{\mathrm{bill}}(q,b_i).
 $$
 
 Let $(p_j)$ be a speech paragraph linked to one of the selected bills. Paragraph
@@ -71,9 +71,7 @@ whose output is bounded in $(0,1)$ by the sigmoid $(\sigma)$.
 The final evidence set passed to stance detection is
 
 $$
-\mathcal{P}_{\tau}(q) =
-\left\{p_j \in \mathcal{P}_M(q) :
-s_{\mathrm{rerank}}(q,p_j) \geq \tau\right\},
+\mathcal{P}_{\tau}(q) = \{\ p_j \in \mathcal{P}_M(q) : s_{\mathrm{rerank}}(q,p_j) \geq \tau \}\,
 $$
 
 where $(\tau=0.4)$ is the reranking threshold. The complete unthresholded reranked pool is retained for evaluating the precision–recall tradeoff of $\tau$.
