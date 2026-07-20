@@ -6,8 +6,8 @@ MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swi
 
 ```mermaid
 flowchart TD
-    A[Speech parquet] --> B[Preprocessing and bill metadata]
-    B --> C[E5 bill retrieval<br/>top 50 bills]
+    A[Speeches] --> B[Preprocessing and bill filtering]
+    B --> C[Bill retrieval<br/>top 50 bills]
     C --> D[Select paragraphs from candidate bills]
     D --> E[E5 paragraph dense pool]
     E --> F[BGE cross-encoder reranking]
@@ -18,7 +18,69 @@ flowchart TD
     J --> K[Support/oppose probabilities and margin]
 ```
 
-Bill retrieval is the recall stage: bill search text combines the German bill title and statutory text. Paragraph reranking is the precision stage: it selects passages that address the query more closely before stance scoring. The unthresholded pool is always saved for threshold evaluation.
+## Embedding and Scoring
+
+Let $(q)$ be the retrieval query. For each bill $(b_i)$, the searchable text is
+
+$$
+x_i = \text{bill\_title\_de}_i \,:: \text{statutory\_text}_i,
+$$
+
+where $(::)$ denotes concatenation.
+
+The encoder produces normalized vectors by embedding the query and each bill text:
+
+$$
+\mathbf{q} = E(\text{query: }q), \qquad
+\mathbf{b}_i = E(\text{passage: }x_i),
+$$
+
+and bill similarity is their dot product, equivalent to cosine similarity after
+normalization:
+
+$$
+s_{\mathrm{bill}}(q,b_i) = \mathbf{q}^{\top}\mathbf{b}_i.
+$$
+
+>Note: the `query` and `passage` prefixes are used to distinguish the two types of text in the multilingual E5 encoder as indicated in the model card.
+
+The candidate bill set is the top $(K=50)$ bills ranked by
+this score:
+
+$$
+\mathcal{B}_K(q) = \operatorname{TopK}_{b_i}\; s_{\mathrm{bill}}(q,b_i).
+$$
+
+Let $(p_j)$ be a speech paragraph linked to one of the selected bills. Paragraph
+embeddings are scored in the same way:
+
+$$
+\mathbf{p}_j = E(\text{passage: }p_j), \qquad
+s_{\mathrm{dense}}(q,p_j) = \mathbf{q}^{\top}\mathbf{p}_j.
+$$
+
+The dense paragraph pool contains the top $(M=100)$ paragraphs by $(s_{\mathrm{dense}})$. These paragraphs are then scored by the BGE cross-encoder $(R)$:
+
+$$
+s_{\mathrm{rerank}}(q,p_j) = \sigma(R(q,p_j)).
+$$
+
+whose output is bounded in $(0,1)$ by the sigmoid $(\sigma)$.
+>Note: the original output of the BGE cross-encoder is unbounded, but we apply a sigmoid to produce a reranking score in $(0,1)$ as to later threshold the evidence pool.
+
+The final evidence set passed to stance detection is
+
+$$
+\mathcal{P}_{\tau}(q) =
+\left\{p_j \in \mathcal{P}_M(q) :
+s_{\mathrm{rerank}}(q,p_j) \geq \tau\right\},
+$$
+
+where $(\tau=0.4)$ is the reranking threshold. The complete unthresholded reranked pool is retained for evaluating the precision–recall tradeoff of $\tau$.
+
+>Info: Bill retrieval is the recall stage: bill search text combines the German bill title and statutory text.
+
+>Info: Paragraph reranking is the precision stage: it selects passages that address the query more closely before stance scoring. The unthresholded pool is always saved for threshold evaluation.
 
 ## RunAI
 
