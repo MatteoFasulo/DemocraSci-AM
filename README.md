@@ -4,23 +4,34 @@ MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swi
 
 ## Pipeline overview
 
-```text
-speech parquet -> preprocessing and bill metadata
-              -> E5 bill retrieval (top 50)
-              -> E5 paragraph dense pool
-              -> BGE paragraph reranking
-              -> thresholded evidence
-              -> XLM-R stance prediction
+```mermaid
+flowchart TD
+    A[Speech parquet] --> B[Preprocessing and bill metadata]
+    B --> C[E5 bill retrieval<br/>top 50 bills]
+    C --> D[Select paragraphs from candidate bills]
+    D --> E[E5 paragraph dense pool]
+    E --> F[BGE cross-encoder reranking]
+    F --> G{Rerank threshold}
+    G -->|Pass| H[Evidence passages]
+    G -->|Discard| I[Unthresholded pool for evaluation]
+    H --> J[XLM-R stance prediction]
+    J --> K[Support/oppose probabilities and margin]
 ```
 
 Bill retrieval is the recall stage: bill search text combines the German bill title and statutory text. Paragraph reranking is the precision stage: it selects passages that address the query more closely before stance scoring. The unthresholded pool is always saved for threshold evaluation.
 
 ## RunAI
 
-Image is based on `nvcr.io/nvidia/pytorch:25.06-py3` with 1 GPU with 20% of its memory (~16GB of A100). Run the following command to submit a job:
+Image is based on `nvcr.io/nvidia/pytorch:25.06-py3` with 1 GPU with 20% of its memory (~16GB of A100).
+
+Run the following command to submit a job:
 
 ```bash
-runai workspace submit <JOB_NAME> -i nvcr.io/nvidia/pytorch:25.06-py3 --gpu-request-type portion --gpu-portion-request 0.20 --gpu-devices-request 1
+runai workspace submit <JOB_NAME> \
+-i nvcr.io/nvidia/pytorch:25.06-py3 \
+--gpu-request-type portion \
+--gpu-portion-request 0.20 \
+--gpu-devices-request 1
 ```
 
 To expose the SSH port and connect to the workspace, run:
