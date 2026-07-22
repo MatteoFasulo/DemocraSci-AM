@@ -156,6 +156,18 @@ python main.py \
 
 Optional controls include `--paragraph-dense-pool` and `--batch-size`.
 
+### Run all policy solutions
+
+To run the pipeline once for every policy solution in
+`data/policy_solutions_classified.json`, use:
+
+```bash
+python runner.py
+```
+
+The runner invokes `main.py` sequentially and writes each run's artifacts to
+a separate directory under `outputs/`.
+
 ## Dashboard
 
 The same workflow is available through Streamlit:
