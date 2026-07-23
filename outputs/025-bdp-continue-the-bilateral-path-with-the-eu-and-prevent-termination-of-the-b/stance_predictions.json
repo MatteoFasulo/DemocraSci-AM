@@ -1,0 +1,20 @@
+[
+  {
+    "speech_id":248876,
+    "paragraph_id":7,
+    "Affair_ID":"20193420",
+    "bill_number":19.342,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Continue the bilateral path with the EU and prevent termination of the bilateral treaties.",
+    "passage":"Der bisherige Prozess für den Abschluss eines institutionellen Abkommens kann aus Sicht der CVP-Fraktion nicht als sehr glücklich bezeichnet werden. Von verschiedenster Seite hat sich bereits sehr viel Widerstand gegen das vorliegende Abkommen aufgebaut. Es ist für die künftig erfolgreiche Zusammenarbeit mit der EU im Rahmen der bilateralen Abkommen von grosser Bedeutung, dass die weiteren Gespräche und Zusatzverhandlungen auch innenpolitisch in einem Klima des gegenseitigen Vertrauens und Austausches gepflegt werden. Der bilaterale Weg der Schweiz mit der EU ist bis auf Weiteres die einzig realistische Form einer erfolgreichen Zusammenarbeit. Deshalb sollten wir diesem tönernen Gefäss Sorge tragen und es nicht ohne Not zu Boden fallen lassen. Am Rahmenabkommen, so wie es heute vorliegt, muss aber noch weiter modelliert und gearbeitet werden.",
+    "label":"OPPOSE",
+    "stance_prob_support":0.3979094923,
+    "stance_prob_neutral":0.0,
+    "stance_prob_oppose":0.6020905375,
+    "MP":"Ritter Markus",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.5927097201
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "speech_id":298354,
+    "paragraph_id":6,
+    "Affair_ID":"20203365",
+    "bill_number":20.3365,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Keep cash in Switzerland as a means of payment and oppose forced conversion to purely electronic money.",
+    "passage":"Il faut dire que le droit suisse en vigueur, à l'article 3 de la loi sur l'unité monétaire et les moyens de paiement, consacre, effectivement, l'obligation d'accepter des paiements en espèces. Le Conseil fédéral rappelle lui-même, dans son avis, que cette obligation n'est que de droit dispositif - on traduit en français: une obligation qui n'est que de droit dispositif n'est pas une obligation. En d'autres termes, le droit suisse en vigueur ne comporte aucun mécanisme, ni aucune règle, permettant de nous protéger contre la suppression du cash, dont certains continuent à rêver.",
+    "label":"OPPOSE",
+    "stance_prob_support":0.2900474072,
+    "stance_prob_neutral":0.0,
+    "stance_prob_oppose":0.7099525928,
+    "MP":"Addor Jean-Luc",
+    "party":"SVP",
+    "topic":"Finances, Financial Sector",
+    "rerank_score":0.6467058659
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-07-23T11:03:20.557403+00:00",
+  "device": "cuda",
+  "config": {
+    "input_data": "data/speeches_with_text.parquet",
+    "run_name": "014-FDP-Find a long-term solution for exchange of students and researchers (successor to Erasmus).",
+    "topic": "Education, Research",
+    "retrieval_query": "Find a long-term solution for exchange of students and researchers (successor to Erasmus).",
+    "stance_claim": "Find a long-term solution for exchange of students and researchers (successor to Erasmus).",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "intfloat/multilingual-e5-large",
+    "stance_model": "MatteoFasulo/xlm-roberta-xstance"
+  },
+  "counts": {
+    "raw_rows": 666691,
+    "eligible_paragraphs": 169679,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 0,
+    "stance_predictions": 0
+  }
+}

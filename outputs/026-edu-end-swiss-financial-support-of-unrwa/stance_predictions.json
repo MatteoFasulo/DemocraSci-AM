@@ -1,0 +1,38 @@
+[
+  {
+    "speech_id":259550,
+    "paragraph_id":1,
+    "Affair_ID":"20183924",
+    "bill_number":18.3924,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"End Swiss financial support of UNRWA.",
+    "passage":"Was will meine Motion? Der Bundesrat wird beauftragt, dem Parlament eine Strategie vorzulegen, die eine klare Senkung der Finanzierung des Hilfswerks der Vereinten Nationen für Palästina-Flüchtlinge im Nahen Osten (UNRWA) vorsieht. Laut Bericht des Eidgenössischen Departementes für auswärtige Angelegenheiten unterstützt die Schweiz die UNRWA jährlich mit rund 20 Millionen Franken. Eine Reform der UNRWA ist auf internationaler Ebene schon lange ein Thema, unter anderem deshalb, weil die Wirksamkeit dieser Unterstützung sehr viele Fragen aufwirft und die Transparenz bis heute ungenügend ist. Daher stellt sich die berechtigte Frage, wie es in dieser Sache weitergehen soll. Die Botschaft zur Strategie der internationalen Zusammenarbeit 2021-2024 kommt bald ins Parlament, wie auch der Bericht zum Postulat Nantermod 18.3557, \"UNRWA. Rückblick und Ausblick nach 70 Jahren\", zur Arbeit der UNRWA und zur Zusammenarbeit der Schweiz mit den[NB]internationalen Organisationen.",
+    "label":"OPPOSE",
+    "stance_prob_support":0.4019240439,
+    "stance_prob_neutral":0.0,
+    "stance_prob_oppose":0.5980759859,
+    "MP":"von Siebenthal Erich",
+    "party":null,
+    "topic":"International Affairs",
+    "rerank_score":0.9397501945
+  },
+  {
+    "speech_id":220779,
+    "paragraph_id":3,
+    "Affair_ID":"20163289",
+    "bill_number":16.3289,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"End Swiss financial support of UNRWA.",
+    "passage":"Die UNRWA macht eigentlich seit Jahren eine Feuerwehrübung. Nehmen wir ein Beispiel: Vor zwei Jahren, glaube ich, im Sommer, hatte die UNRWA nicht mehr genügend finanzielle Unterstützung von der internationalen Gemeinschaft, um die Schulen Ende des Sommers wieder eröffnen zu können. Wenn es in der Situation, wie sie jetzt in dieser Region der Welt herrscht, die Schulen nicht wieder eröffnet worden wären, wäre das fast sicher eine grosse Unterstützung für eine neue Intifada gewesen. Was wurde gemacht? Die Schweiz, mit anderen Staaten, aber vor allem wir, haben die internationale Gemeinschaft so mobilisiert, dass wir in einigen Tagen in der internationalen Gemeinschaft, ich glaube, 80 Millionen Franken - ich bin nicht mehr sicher, wie hoch die Zahl war - zusammengetragen haben, um diese Schulen wieder zu eröffnen. Das hat etwas geholfen. Aber die Grundprobleme sind nicht gelöst. Das können wir nicht alleine tun. Aber wenn die Schweiz dort einmal nicht mehr helfen würde, würde einfach das Risiko noch etwas steigen, dass diese Region noch tiefer fällt. Das wollen wir nicht.",
+    "label":"OPPOSE",
+    "stance_prob_support":0.4453707635,
+    "stance_prob_neutral":0.0,
+    "stance_prob_oppose":0.5546292067,
+    "MP":"Burkhalter Didier",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.717841804
+  }
+]

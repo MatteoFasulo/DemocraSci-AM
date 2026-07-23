@@ -1,0 +1,20 @@
+[
+  {
+    "speech_id":219592,
+    "paragraph_id":3,
+    "Affair_ID":"20153839",
+    "bill_number":15.3839,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Provide more and cheaper external (family-supplementary) childcare.",
+    "passage":"1. Das Parlament hat im Frühjahr 100 Millionen Franken bewilligt, mit denen Angebote für familienexterne Kinderbetreuung ab 2018 vergünstigt und bedarfsgerechter angeboten werden können.",
+    "label":"SUPPORT",
+    "stance_prob_support":0.8504636884,
+    "stance_prob_neutral":0.0,
+    "stance_prob_oppose":0.1495363265,
+    "MP":"Schneider-Ammann Johann N.",
+    "party":null,
+    "topic":"Social Welfare",
+    "rerank_score":0.4458270073
+  }
+]

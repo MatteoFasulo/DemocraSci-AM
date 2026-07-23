@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-07-23T11:11:59.797589+00:00",
+  "device": "cuda",
+  "config": {
+    "input_data": "data/speeches_with_text.parquet",
+    "run_name": "023-SP-Lower medicine prices and cut the price of generics.",
+    "topic": "Health",
+    "retrieval_query": "Lower medicine prices and cut the price of generics.",
+    "stance_claim": "Lower medicine prices and cut the price of generics.",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "intfloat/multilingual-e5-large",
+    "stance_model": "MatteoFasulo/xlm-roberta-xstance"
+  },
+  "counts": {
+    "raw_rows": 666691,
+    "eligible_paragraphs": 169679,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 3,
+    "stance_predictions": 3
+  }
+}

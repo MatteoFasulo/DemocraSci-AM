@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-07-23T10:55:48.218075+00:00",
+  "device": "cuda",
+  "config": {
+    "input_data": "data/speeches_with_text.parquet",
+    "run_name": "006-FDP-Open marriage to same-sex couples, including access to reproductive medicine.",
+    "topic": "Civil Rights",
+    "retrieval_query": "Open marriage to same-sex couples, including access to reproductive medicine.",
+    "stance_claim": "Open marriage to same-sex couples, including access to reproductive medicine.",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "intfloat/multilingual-e5-large",
+    "stance_model": "MatteoFasulo/xlm-roberta-xstance"
+  },
+  "counts": {
+    "raw_rows": 666691,
+    "eligible_paragraphs": 169679,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 7,
+    "stance_predictions": 7
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-07-23T10:52:50.547023+00:00",
+  "device": "cuda",
+  "config": {
+    "input_data": "data/speeches_with_text.parquet",
+    "run_name": "003-EDU-Give Swiss quality products priority over cheap imports on the Swiss market.",
+    "topic": "Agriculture",
+    "retrieval_query": "Give Swiss quality products priority over cheap imports on the Swiss market.",
+    "stance_claim": "Give Swiss quality products priority over cheap imports on the Swiss market.",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "intfloat/multilingual-e5-large",
+    "stance_model": "MatteoFasulo/xlm-roberta-xstance"
+  },
+  "counts": {
+    "raw_rows": 666691,
+    "eligible_paragraphs": 169679,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 11,
+    "stance_predictions": 11
+  }
+}

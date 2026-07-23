@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-07-23T11:24:10.041906+00:00",
+  "device": "cuda",
+  "config": {
+    "input_data": "data/speeches_with_text.parquet",
+    "run_name": "036-SP-Provide more and cheaper external (family-supplementary) childcare.",
+    "topic": "Social Welfare",
+    "retrieval_query": "Provide more and cheaper external (family-supplementary) childcare.",
+    "stance_claim": "Provide more and cheaper external (family-supplementary) childcare.",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "intfloat/multilingual-e5-large",
+    "stance_model": "MatteoFasulo/xlm-roberta-xstance"
+  },
+  "counts": {
+    "raw_rows": 666691,
+    "eligible_paragraphs": 169679,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 1,
+    "stance_predictions": 1
+  }
+}

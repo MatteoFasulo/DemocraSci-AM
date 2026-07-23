@@ -1,0 +1,20 @@
+[
+  {
+    "speech_id":314641,
+    "paragraph_id":6,
+    "Affair_ID":"20213264",
+    "bill_number":21.3264,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Invite religious organisations to sign the Charter of Religious Communities as a binding commitment to the rule of law and human rights.",
+    "passage":"Pour ces différentes raisons, je vous invite à soutenir ma motion.",
+    "label":"SUPPORT",
+    "stance_prob_support":0.8797444701,
+    "stance_prob_neutral":0.0,
+    "stance_prob_oppose":0.120255582,
+    "MP":"Clivaz Christophe",
+    "party":"Grüne",
+    "topic":"Culture, Arts, Religion, Sport, Entertainment",
+    "rerank_score":0.4648439884
+  }
+]

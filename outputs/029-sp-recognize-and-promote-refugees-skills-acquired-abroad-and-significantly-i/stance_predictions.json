@@ -1,0 +1,20 @@
+[
+  {
+    "speech_id":218087,
+    "paragraph_id":2,
+    "Affair_ID":"20153700",
+    "bill_number":15.37,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Recognize and promote refugees' skills acquired abroad and significantly increase federal integration funds so refugees can earn money quickly.",
+    "passage":"Pour mettre en oeuvre le nouvel article 121a de la Constitution, le Parlement a accepté de supprimer l'obligation de verser la taxe spéciale de 10 pour cent, qui touche les personnes relevant du domaine de l'asile exerçant une activité lucrative, ainsi que l'obligation d'autorisation à laquelle sont soumises les personnes admises à titre provisoire et les réfugiés reconnus pour exercer une activité lucrative. Ces mesures visent à améliorer l'intégration professionnelle des personnes relevant du domaine de l'asile qui sont capables de travailler et de mieux exploiter ce potentiel offert par la main-d'oeuvre indigène. Avec la suppression de la taxe spéciale, la Confédération table à l'avenir sur de plus grandes économies annuelles dans l'aide sociale, lorsque les mesures prévues pour améliorer l'intégration professionnelle des personnes relevant du domaine de l'asile produiront leurs effets.",
+    "label":"OPPOSE",
+    "stance_prob_support":0.4812351465,
+    "stance_prob_neutral":0.0,
+    "stance_prob_oppose":0.5187648535,
+    "MP":"Piller Carrard Valérie",
+    "party":null,
+    "topic":"Migration",
+    "rerank_score":0.4859012663
+  }
+]
