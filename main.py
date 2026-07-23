@@ -4,6 +4,7 @@ import json
 import logging
 import re
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -108,6 +109,7 @@ def cli(
     run_dir = make_output_dir(output_dir, run_name)
     logger.info("Writing run artifacts to %s", run_dir)
 
+    start_time = time.time()
     raw = pd.read_parquet(input_data)
     logger.info("Loaded %d rows from %s", len(raw), input_data)
 
@@ -176,7 +178,7 @@ def cli(
             "stance_predictions": len(stance_results),
         },
     )
-    logger.info("Saved JSON records and manifest")
+    logger.info("Saved JSON records and manifest. Run completed in %.2f seconds.", time.time() - start_time)
 
 
 if __name__ == "__main__":

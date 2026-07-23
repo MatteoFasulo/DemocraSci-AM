@@ -138,6 +138,40 @@ def clean_text(value: Any) -> str:
     text = re.sub(r"<[^>]+>", " ", text)
     return re.sub(r"\s+", " ", text).strip()
 
+def remove_paragraphs(
+    df: pd.DataFrame,
+    patterns: Iterable[str] = (
+        r"\[VS\]",  # voting session
+        r"\[PAGE \d+\]",  # page number
+        r"\[GZ\]", # GZ reference
+    ),
+) -> pd.DataFrame:
+    """
+    A series of patterns to remove from paragraphs
+
+    - [VS] -> voting session
+    - [PAGE 1240] -> page number
+    - [GZ] -> GZ reference
+    """
+    # Copy the dataframe to avoid modifying the original
+    df = df.copy()
+
+    # Compile the regex patterns
+    compiled_patterns = [re.compile(pattern) for pattern in patterns]
+
+    # Function to remove patterns from a single text
+    def remove_patterns(text: str) -> str:
+        for pattern in compiled_patterns:
+            text = pattern.sub("", text)
+        return text.strip()
+
+    # Apply the function to the 'text' column
+    df["text"] = df["text"].apply(remove_patterns)
+
+    # Remove rows where the 'text' column is empty after cleaning (i.e., only contained the patterns)
+    df = df[df["text"] != ""]
+
+    return df
 
 def df_preprocessing(
     df: pd.DataFrame,
@@ -153,6 +187,7 @@ def df_preprocessing(
     filtered = df[df["bill_labels"].isin(tuple(bill_types))]
     filtered = filtered.dropna(subset=["bill_number", "text"]).copy().reset_index(drop=True)
     filtered["text"] = filtered["text"].map(clean_text)
+    filtered = remove_paragraphs(filtered) # New: Remove unwanted patterns from the 'text' column
     filtered = filtered[filtered["text"].ne("")].reset_index(drop=True)
 
     build_bill_metadata_cache(filtered, metadata_path)
