@@ -34,12 +34,19 @@ def main() -> None:
 
         print(f"\n[{index:03d}/{len(records):03d}] Running {party} ({topic})", flush=True)
 
+        # If run exists, skip it. Otherwise, run the main program with the appropriate arguments.
+        run_name = f"{index:03d}-{party}-{policy_solution}"
+        run_dir = SCRIPT_DIR / "outputs" / run_name
+        if run_dir.exists():
+            print(f"Run {run_name} already exists. Skipping.", flush=True)
+            continue
+
         subprocess.run(
             [
                 sys.executable,
                 str(MAIN_FILE),
                 "--run-name",
-                f"{index:03d}-{party}-{policy_solution}",
+                run_name,
                 "--topic",
                 topic,
                 "--retrieval-query",

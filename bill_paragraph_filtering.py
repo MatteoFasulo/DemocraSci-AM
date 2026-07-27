@@ -23,45 +23,37 @@ from const import RERANKER_MODEL, EMBEDDING_MODEL, RERANK_THRESHOLD
 
 DEFAULT_BILL_EMBEDDINGS_CACHE = Path("data/bill_embeddings.safetensors")
 
-
 def load_embedding_model(device: torch.device | str | None = None) -> SentenceTransformer:
     """Load the configured multilingual E5 embedding model."""
-    return SentenceTransformer(EMBEDDING_MODEL, device=device)
+    return SentenceTransformer(EMBEDDING_MODEL, device=device, model_kwargs={"dtype": "auto"})
 
 
-def load_reranker_model(device: torch.device | str | None = None) -> CrossEncoder:
+def load_reranker_model(device: torch.device | str | None = None, act_fn: str = "sigmoid") -> CrossEncoder:
     """Load the configured BGE cross-encoder reranker."""
-    return CrossEncoder(RERANKER_MODEL, device=device, max_length=512)
+
+    POLICY_RELEVANCE_PROMPT = "Classify whether the document matches the query policy claim"
+    return CrossEncoder(
+        RERANKER_MODEL,
+        device=device,
+        max_length=512,
+        activation_fn=torch.nn.Sigmoid() if act_fn == "sigmoid" else torch.nn.Identity(),
+        model_kwargs={"torch_dtype": torch.bfloat16},
+        prompts={"policy_relevance": POLICY_RELEVANCE_PROMPT},
+        default_prompt_name="policy_relevance"
+    )
 
 def encode_queries(
     model: SentenceTransformer,
     texts: str | Iterable[str],
     batch_size: int = 256,
 ) -> np.ndarray:
-    """Encode retrieval queries with the E5 ``query:`` prefix."""
+    """Encode retrieval queries"""
     if isinstance(texts, str):
         texts = [texts]
 
     return model.encode(
-        [f"query: {str(text).strip()}" for text in texts],
-        batch_size=batch_size,
-        normalize_embeddings=True,
-        convert_to_numpy=True,
-        show_progress_bar=False,
-    )
-
-
-def encode_passages(
-    model: SentenceTransformer,
-    texts: str | Iterable[str],
-    batch_size: int = 256,
-) -> np.ndarray:
-    """Encode searchable passages with the E5 ``passage:`` prefix."""
-    if isinstance(texts, str):
-        texts = [texts]
-
-    return model.encode(
-        [f"passage: {str(text).strip()}" for text in texts],
+        [f"{str(text).strip()}" for text in texts],
+        prompt_name="sts_query",
         batch_size=batch_size,
         normalize_embeddings=True,
         convert_to_numpy=True,
@@ -95,7 +87,7 @@ def load_or_build_bill_embeddings(
 
     missing = [i for i, affair_id in enumerate(ids) if cached_hashes.get(affair_id) != text_hashes[i]]
     if missing:
-        new_embeddings = encode_queries(model, texts[missing]).astype(np.float32)
+        new_embeddings = encode_queries(model, texts[missing], batch_size=16).astype(np.float32)
         for row, embedding in zip(missing, new_embeddings, strict=False):
             cached_embeddings[ids[row]] = embedding
 
@@ -121,8 +113,8 @@ def score_bills(
     result = bill_metadata_df.copy().reset_index(drop=True)
     query_embedding = encode_queries(embedding_model, retrieval_query)
     bill_embeddings = load_or_build_bill_embeddings(result, embedding_model)
-    similarities = query_embedding @ bill_embeddings.T
-    result["bill_embedding_score"] = similarities.max(axis=0)
+    similarities = (query_embedding @ bill_embeddings.T) * 100
+    result["bill_embedding_score"] = similarities.ravel()
     result["bill_embedding_rank"] = result["bill_embedding_score"].rank(
         ascending=False, method="first"
     ).astype(int)
@@ -142,8 +134,8 @@ def select_target_speeches(df: pd.DataFrame, candidate_bills: pd.DataFrame) -> p
 def score_paragraphs(
     topic: str,
     retrieval_query: str,
+    stance_claim: str,
     speeches_df: pd.DataFrame,
-    embedding_model: SentenceTransformer,
     reranker: CrossEncoder,
     dense_pool_size: int,
     batch_size: int,
@@ -159,30 +151,19 @@ def score_paragraphs(
         return empty, empty
 
     passages = speeches_df.copy().reset_index(drop=True)
-    query_embeddings = encode_queries(embedding_model, retrieval_query, batch_size=batch_size)
-    passage_embeddings = encode_passages(embedding_model, passages["text"], batch_size=batch_size)
-    passages["embedding_score"] = (
-        query_embeddings @ passage_embeddings.T
-    ).ravel()
-    dense_pool = (
-        passages
-        .sort_values("embedding_score", ascending=False)
-        .head(min(dense_pool_size, len(passages)))
-        .copy()
-        .reset_index(drop=True)
-    )
+    # HACK: CrossEncoder runs on the full set of passages from the TopK Bills (no pre-selection applied).
     ranked = reranker.rank(
-        retrieval_query,
-        dense_pool["text"].tolist(),
-        top_k=len(dense_pool),
+        query=stance_claim,
+        documents=passages["text"].tolist(), # the paragraphs are the documents to be reranked
+        top_k=dense_pool_size, # We take TopK passages out of the full re-ranking distribution.
         return_documents=False,
         batch_size=batch_size,
-        show_progress_bar=False,
+        show_progress_bar=True,
     )
     ranking = pd.DataFrame(ranked)
 
     pool = ranking.merge(
-        dense_pool.reset_index().rename(columns={"index": "corpus_id"}),
+        passages.reset_index().rename(columns={"index": "corpus_id"}),
         on="corpus_id",
         how="left",
     )
@@ -192,10 +173,9 @@ def score_paragraphs(
         raise ValueError("Reranker output does not expose a score field")
 
     pool = pool.sort_values("rerank_score", ascending=False).reset_index(drop=True)
-    pool["evidence_rank"] = np.arange(1, len(pool) + 1)
     pool["retrieval_query"] = retrieval_query
+    pool["stance_claim"] = stance_claim
     pool["topic"] = topic
 
     filtered = pool[pool["rerank_score"] >= RERANK_THRESHOLD].copy().reset_index(drop=True)
-    filtered["evidence_rank"] = np.arange(1, len(filtered) + 1)
     return pool, filtered

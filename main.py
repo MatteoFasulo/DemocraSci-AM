@@ -133,8 +133,8 @@ def cli(
     passages_before_threshold, passages = score_paragraphs(
         topic=topic,
         retrieval_query=retrieval_query,
+        stance_claim=stance_claim,
         speeches_df=target_speeches,
-        embedding_model=embedding_model,
         reranker=reranker,
         dense_pool_size=paragraph_dense_pool,
         batch_size=batch_size,
@@ -142,16 +142,16 @@ def cli(
     save_records(passages_before_threshold, run_dir / "candidate_passages_before_threshold.json")
     save_records(passages, run_dir / "candidate_passages.json")
 
-    tokenizer, stance_model_object, stance_device = load_stance_classifier()
-    stance_results = score_stance(
-        passages,
-        stance_claim=stance_claim,
-        tokenizer=tokenizer,
-        model=stance_model_object,
-        device=stance_device,
-        batch_size=batch_size,
-    )
-    save_stance_results(stance_results, run_dir / "stance_predictions.json")
+    #tokenizer, stance_model_object, stance_device = load_stance_classifier()
+    #stance_results = score_stance(
+    #    passages,
+    #    stance_claim=stance_claim,
+    #    tokenizer=tokenizer,
+    #    model=stance_model_object,
+    #    device=stance_device,
+    #    batch_size=batch_size,
+    #)
+    #save_stance_results(stance_results, run_dir / "stance_predictions.json")
 
     config = {
         "input_data": str(input_data),
@@ -175,7 +175,7 @@ def cli(
             "candidate_bills": len(candidate_bills),
             "candidate_passages_before_threshold": len(passages_before_threshold),
             "candidate_passages": len(passages),
-            "stance_predictions": len(stance_results),
+            #"stance_predictions": len(stance_results),
         },
     )
     logger.info("Saved JSON records and manifest. Run completed in %.2f seconds.", time.time() - start_time)
