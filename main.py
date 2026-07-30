@@ -187,9 +187,9 @@ def cli(
     save_records(passages_before_threshold, run_dir / "candidate_passages_before_threshold.json")
     save_records(passages, run_dir / "candidate_passages.json")
 
-    #if passages.empty:
+    # if passages.empty:
     #    stance_results = passages.copy()
-    #else:
+    # else:
     #    tokenizer, stance_model_object, stance_device = load_stance_classifier()
     #    stance_results = score_stance(
     #        passages,
@@ -199,7 +199,7 @@ def cli(
     #        device=stance_device,
     #        batch_size=batch_size,
     #    )
-    #save_stance_results(stance_results, run_dir / "stance_predictions.json")
+    # save_stance_results(stance_results, run_dir / "stance_predictions.json")
 
     config = {
         "chroma_db_path": str(chroma_db_path),
@@ -225,7 +225,7 @@ def cli(
             "candidate_bills": len(candidate_bills),
             "candidate_passages_before_threshold": len(passages_before_threshold),
             "candidate_passages": len(passages),
-            #"stance_predictions": len(stance_results),
+            # "stance_predictions": len(stance_results),
         },
     )
     logger.info(

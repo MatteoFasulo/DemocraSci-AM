@@ -4,28 +4,47 @@ MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swi
 
 ## Pipeline overview
 
+The active pipeline has three stages:
+
+1. **Corpus preparation and indexing** - chroma.py prepares eligible Swiss
+   parliamentary speech paragraphs, creates one bill document per Affair_ID,
+   and stores bill and paragraph records in persistent Chroma collections.
+   Harrier (microsoft/harrier-oss-v1-0.6b) creates normalized embeddings.
+2. **Bill retrieval** - the model service embeds each retrieval query and
+   retrieves the top 50 bills from the Chroma bills collection.
+3. **Paragraph retrieval and reranking** - it retrieves up to 100 paragraphs
+   matching those bills through an Affair_ID filter, then ranks them with
+   Qwen/Qwen3-Reranker-0.6B. The default threshold is 0.40; both the full
+   reranked pool and passages above the threshold are saved for inspection
+   and annotation.
+
+The model service loads the embedding function, Chroma collections, and Qwen
+reranker once. main.py and runner.py call the service and write run artifacts;
+they do not load the retrieval models themselves.
+
 ```mermaid
 flowchart TD
-    A[Raw speeches parquet] --> B[Prepare paragraphs]
-    B --> C[Chroma Bills collection]
-    C --> D[Top 50 bills and Affair_IDs]
-    D --> E[Chroma Paragraphs collection<br/>Affair_ID metadata filter]
+    A[Speeches parquet] --> B[Prepare eligible paragraphs]
+    B --> C[Persistent Chroma collections]
+    Q[Retrieval query] --> D[Top 50 bills]
+    C --> D
+    D --> E[Paragraph pool up to 100]
     E --> F[Qwen cross-encoder reranking]
-    F --> G{Rerank threshold}
-    G -->|Pass| H[Evidence passages]
-    G -->|Discard| I[Unthresholded pool for evaluation]
-    H --> J[mDeBERTa stance prediction]
-    J --> K[Support/oppose probabilities and margin]
+    F --> G{Score >= 0.40?}
+    G -->|Yes| H[Candidate passages]
+    G -->|No| I[Retained below-threshold pool]
 ```
 
-Harrier (`microsoft/harrier-oss-v1-0.6b`) creates normalized embeddings for both
-collections. Bill documents combine German and French titles with statutory text
-from `data/bill_metadata_cache.json`; ideological summaries are not embedded.
-Paragraphs remain linked to bills through their `Affair_ID` metadata.
+**Current status:** stance detection code exists but is currently disabled in
+main.py. The current outputs are retrieval and reranking outputs only.
 
 ## RunAI
 
 Image is based on `nvcr.io/nvidia/pytorch:25.06-py3` with 1 GPU with 20% of its memory (~16GB of A100).
+
+<details>
+
+<summary>RunAI CLI instructions</summary>
 
 Run the following command to submit a job:
 
@@ -49,12 +68,20 @@ then connect in interactive mode with:
 ssh root@localhost -p 2222
 ```
 
+</details>
+
 ## Setup and data
 
 The project requires Python 3.12 or newer. Install dependencies with:
 
 ```bash
 uv sync
+```
+
+alternatively, use pip:
+
+```bash
+pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly fastapi
 ```
 
 The Chroma ingestion command consumes `data/speeches_with_text.parquet`. Generate it first by reassembling the original dataset from the 3 parts:
@@ -67,26 +94,24 @@ cat data/speeches_with_text.gz.part_* > data/speeches_with_text.gz
 gunzip < "data/speeches_with_text.gz" > "data/speeches_with_text.parquet"
 ```
 
-To ingest all eligible paragraphs and bills into Chroma, run:
-
-```bash
-python chroma.py --recreate
-```
-
-After ingestion, `main.py` reads only the persistent Chroma collections; it does
-not load the parquet at query time. If the collections use a non-default path,
-pass it with `--chroma-db-path`.
-
 ## Detailed pipeline
 
-1. `prepare_paragraphs()` filters the raw parquet to Motion and Parliamentary Initiative rows, cleans text, and removes empty or voting-marker paragraphs.
-2. `chroma.py` builds two persistent collections: one bill record per `Affair_ID` and one paragraph record per `speech_id:paragraph_id`.
-3. Bill documents embed German and French titles plus statutory text from `data/bill_metadata_cache.json`; ideological summaries are excluded.
-4. `score_bills()` queries the Chroma bill collection with Harrier embeddings and keeps `N_TOP_BILLS` (50).
-5. `score_paragraphs()` queries the paragraph collection with an `Affair_ID` metadata filter, then reranks the dense pool with `Qwen/Qwen3-Reranker-0.6B`. By default Qwen sees paragraph text only; `--contextual-reranking` also prepends the bill title in the paragraph's language.
-6. `score_stance()` compares each retained passage with the stance claim using `MatteoFasulo/mdeberta-v3-xstance`.
+- prepare_paragraphs() filters the raw parquet to Motion and Parliamentary
+  Initiative rows, cleans text, and removes empty or voting-marker paragraphs.
+- chroma.py builds one bill record per Affair_ID and one paragraph record per
+  speech_id:paragraph_id.
+- Bill documents combine German and French titles with statutory text from
+  data/bill_metadata_cache.json; ideological summaries are excluded.
+- score_bills() retrieves N_TOP_BILLS (50) bills using Harrier embeddings.
+- score_paragraphs() retrieves a paragraph pool with an Affair_ID metadata
+  filter and reranks it with Qwen. contextual-reranking adds the
+  language-matched bill title to the reranking document.
+- RERANK_THRESHOLD is 0.40 in const.py. The unthresholded pool is saved even
+  when passages fall below this threshold.
 
-The ingestion command exposes independent HNSW settings for both collections. `ef_construction` changes require `--recreate`; `ef_search` can be updated on an existing collection:
+The ingestion command exposes independent HNSW settings for both collections.
+ef_construction changes require --recreate; ef_search can be updated on an
+existing collection:
 
 ```bash
 python chroma.py \
@@ -94,61 +119,86 @@ python chroma.py \
   --paragraphs-ef-search 100 --paragraphs-ef-construction 200
 ```
 
-`--topic` must be one of the 21 topics in `const.py`. The pipeline retrieves the top 50 bills, uses a paragraph dense pool of 100 by default, and applies the `0.40` rerank threshold from `const.py`. If `--stance-claim` is omitted, the retrieval query is used for stance scoring as well.
-
 ## Outputs
 
-Each run writes a new directory under `outputs/` containing:
+<details>
+<summary>View output files</summary>
 
-- `candidate_bills.json`: the top 50 bills retrieved for the query.
-- `candidate_passages_before_threshold.json`: the Chroma dense pool ranked by the Qwen cross-encoder before threshold filtering.
-- `candidate_passages.json`: the filtered passages with `rerank_score >= RERANK_THRESHOLD`.
-- `stance_predictions.json`: the stance predictions for each passage, including the predicted stance label.
-- `manifest.json`: a manifest of the run, including the retrieval query, stance claim, topic, and other parameters.
+Each run writes a new directory under outputs/ containing:
+
+- candidate_bills.json: the top bills retrieved for the query.
+- candidate_passages_before_threshold.json: the reranked paragraph pool,
+  including passages below 0.40.
+- candidate_passages.json: passages with rerank_score >= 0.40.
+- manifest.json: the query, topic, model configuration, and record counts.
+
+stance_predictions.json is not currently generated because stance detection is
+disabled in main.py.
+
+</details>
 
 ## Run
 
-The retrieval models are served by a local synchronous FastAPI process. Start it
-once and leave it running:
+Run the pipeline in two terminals. The model service must be started before
+main.py or runner.py.
+
+### 1. Prepare the database once
+
+If the parquet file does not exist, reassemble it:
 
 ```bash
-uv run uvicorn model_service:app --host 127.0.0.1 --port 8000
+cat data/speeches_with_text.gz.part_* > data/speeches_with_text.gz
+gunzip < data/speeches_with_text.gz > data/speeches_with_text.parquet
 ```
 
-Check that the models and Chroma collections loaded successfully:
+Build the persistent Chroma collections:
+
+```bash
+python chroma.py --recreate
+```
+
+Repeat this step whenever the indexed corpus changes.
+
+### 2. Terminal 1: start the model service
+
+From the repository root:
+
+```bash
+uvicorn model_service:app --host 127.0.0.1 --port 8000
+```
+
+Wait for the models to finish loading, then check:
 
 ```bash
 curl http://127.0.0.1:8000/health
 ```
 
-In a second terminal, run one pipeline job:
+A successful response contains status ok and the bill and paragraph counts.
+
+### 3. Terminal 2: run one query
+
+From the repository root:
 
 ```bash
-uv run python main.py \
+python main.py \
   --run-name free-trade-us \
   --topic "International Affairs" \
   --retrieval-query "Should Switzerland strive for a free-trade agreement with the US?"
 ```
 
-`main.py` calls the service at `http://127.0.0.1:8000` by default. Use
-`--service-url` to connect to another local service address. The model service
-must remain running while `main.py` or `runner.py` executes.
-
-Optional controls include `--paragraph-dense-pool`, `--batch-size`,
-`--contextual-reranking`, and `--service-url`. If the Chroma database or
-collection names differ from the service defaults, configure them in
-`model_service.py` before starting the service.
+main.py uses http://127.0.0.1:8000 by default. To use another service
+address, add --service-url http://HOST:PORT.
 
 ### Run all policy solutions
 
-With the model service still running, use:
+Keep Terminal 1 running, then in Terminal 2 execute:
 
 ```bash
-uv run python runner.py
+python runner.py
 ```
 
-The runner invokes `main.py` sequentially and writes each run's artifacts to
-a separate directory under `outputs/`.
+The runner calls main.py sequentially and writes one artifact directory per
+policy solution under outputs/.
 
 ## Docker (broken)
 
