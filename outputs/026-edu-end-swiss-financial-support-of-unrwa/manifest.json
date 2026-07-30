@@ -1,0 +1,26 @@
+{
+  "created_at": "2026-07-30T12:02:35.084409+00:00",
+  "device": "cuda",
+  "config": {
+    "chroma_db_path": "/mydata/politperformance/shared/matteof/chromadb",
+    "bill_collection": "DemocraSci_bills",
+    "paragraph_collection": "DemocraSci_paragraphs",
+    "contextual_reranking": false,
+    "run_name": "026-EDU-End Swiss financial support of UNRWA.",
+    "topic": "International Affairs",
+    "retrieval_query": "End Swiss financial support of UNRWA.",
+    "stance_claim": "End Swiss financial support of UNRWA.",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "microsoft/harrier-oss-v1-0.6b",
+    "stance_model": "MatteoFasulo/mdeberta-v3-xstance"
+  },
+  "counts": {
+    "eligible_paragraphs": 169679,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 17
+  }
+}

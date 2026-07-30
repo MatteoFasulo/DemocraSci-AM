@@ -1,0 +1,26 @@
+{
+  "created_at": "2026-07-30T12:05:08.773608+00:00",
+  "device": "cuda",
+  "config": {
+    "chroma_db_path": "/mydata/politperformance/shared/matteof/chromadb",
+    "bill_collection": "DemocraSci_bills",
+    "paragraph_collection": "DemocraSci_paragraphs",
+    "contextual_reranking": false,
+    "run_name": "035-SVP-Flatten the progression rates in taxation.",
+    "topic": "Public Finances, Taxation",
+    "retrieval_query": "Flatten the progression rates in taxation.",
+    "stance_claim": "Flatten the progression rates in taxation.",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "microsoft/harrier-oss-v1-0.6b",
+    "stance_model": "MatteoFasulo/mdeberta-v3-xstance"
+  },
+  "counts": {
+    "eligible_paragraphs": 169679,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 13
+  }
+}
