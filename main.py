@@ -11,12 +11,12 @@ from typing import Any
 
 import click
 import pandas as pd
+import requests
 import torch
 from huggingface_hub.utils import disable_progress_bars
 from transformers.utils import logging as transformers_logging
 
-from bill_paragraph_filtering import load_reranker_model, score_bills, score_paragraphs
-from scripts.chroma_store import DEFAULT_CHROMA_PATH, open_chroma_collections
+from scripts.chroma_store import DEFAULT_CHROMA_PATH
 from const import (
     EMBEDDING_MODEL,
     N_TOP_BILLS,
@@ -127,14 +127,15 @@ def save_manifest(path: Path, config: dict[str, Any], counts: dict[str, int]) ->
     help="Chroma paragraph collection name.",
 )
 @click.option(
+    "--service-url",
+    default="http://127.0.0.1:8000",
+    show_default=True,
+    help="Local model service URL.",
+)
+@click.option(
     "--contextual-reranking/--no-contextual-reranking",
     default=False,
     help="Include the language-matched bill title in Qwen reranking documents.",
-)
-@click.option(
-    "--qwen-instruction",
-    default="Classify whether the document matches the query policy claim",
-    help="Instruction prompt for Qwen cross-encoder.",
 )
 def cli(
     output_dir: Path,
@@ -147,8 +148,8 @@ def cli(
     chroma_db_path: Path,
     bill_collection: str,
     paragraph_collection: str,
+    service_url: str,
     contextual_reranking: bool,
-    qwen_instruction: str,
 ) -> None:
     configure_logging()
     stance_claim = stance_claim or retrieval_query
@@ -156,35 +157,33 @@ def cli(
     logger.info("Writing run artifacts to %s", run_dir)
 
     start_time = time.time()
-    bill_store, paragraph_store = open_chroma_collections(
-        db_path=chroma_db_path,
-        bills_name=bill_collection,
-        paragraphs_name=paragraph_collection,
-        device=DEVICE,
-    )
-    available_bills = bill_store.count()
-    eligible_paragraphs = paragraph_store.count()
-    logger.info(
-        "Opened %d bills and %d paragraphs from Chroma",
-        available_bills,
-        eligible_paragraphs,
-    )
+    payload = {
+        "topic": topic,
+        "retrieval_query": retrieval_query,
+        "stance_claim": stance_claim,
+        "paragraph_dense_pool": paragraph_dense_pool,
+        "batch_size": batch_size,
+        "contextual_reranking": contextual_reranking,
+    }
+    try:
+        response = requests.post(
+            f"{service_url.rstrip('/')}/search",
+            json=payload,
+            timeout=3600,
+        )
+        response.raise_for_status()
+        result = response.json()
+    except requests.RequestException as exc:
+        raise click.ClickException(
+            f"Could not contact model service at {service_url}. "
+            "Start it with: uv run uvicorn model_service:app --host 127.0.0.1 --port 8000"
+        ) from exc
 
-    reranker = load_reranker_model(DEVICE, act_fn="sigmoid", instruction=qwen_instruction)
-    candidate_bills = score_bills(retrieval_query, bill_store, N_TOP_BILLS)
+    candidate_bills = pd.DataFrame(result["candidate_bills"])
     save_records(candidate_bills, run_dir / "candidate_bills.json")
 
-    passages_before_threshold, passages = score_paragraphs(
-        topic,
-        retrieval_query,
-        stance_claim,
-        paragraph_store,
-        candidate_bills,
-        reranker,
-        paragraph_dense_pool,
-        batch_size,
-        contextual_reranking,
-    )
+    passages_before_threshold = pd.DataFrame(result["candidate_passages_before_threshold"])
+    passages = pd.DataFrame(result["candidate_passages"])
     save_records(passages_before_threshold, run_dir / "candidate_passages_before_threshold.json")
     save_records(passages, run_dir / "candidate_passages.json")
 
@@ -221,8 +220,8 @@ def cli(
         run_dir / "manifest.json",
         config,
         {
-            "eligible_paragraphs": eligible_paragraphs,
-            "available_bills": available_bills,
+            "eligible_paragraphs": result["eligible_paragraphs"],
+            "available_bills": result["available_bills"],
             "candidate_bills": len(candidate_bills),
             "candidate_passages_before_threshold": len(passages_before_threshold),
             "candidate_passages": len(passages),

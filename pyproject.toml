@@ -24,8 +24,10 @@ dependencies = [
     "transformers>=4.45",
     "bertopic>=0.17.4",
     "datasets>=3.0",
+    "fastapi>=0.115",
     "matplotlib>=3.10.8",
     "scikit-learn>=1.5",
+    "uvicorn>=0.34",
 ]
 
 [tool.ruff]

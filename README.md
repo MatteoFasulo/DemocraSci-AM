@@ -54,7 +54,7 @@ ssh root@localhost -p 2222
 The project requires Python 3.12 or newer. Install dependencies with:
 
 ```bash
-pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly
+uv sync
 ```
 
 The Chroma ingestion command consumes `data/speeches_with_text.parquet`. Generate it first by reassembling the original dataset from the 3 parts:
@@ -108,25 +108,43 @@ Each run writes a new directory under `outputs/` containing:
 
 ## Run
 
+The retrieval models are served by a local synchronous FastAPI process. Start it
+once and leave it running:
+
 ```bash
-python main.py \
+uv run uvicorn model_service:app --host 127.0.0.1 --port 8000
+```
+
+Check that the models and Chroma collections loaded successfully:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+In a second terminal, run one pipeline job:
+
+```bash
+uv run python main.py \
   --run-name free-trade-us \
   --topic "International Affairs" \
   --retrieval-query "Should Switzerland strive for a free-trade agreement with the US?"
 ```
 
+`main.py` calls the service at `http://127.0.0.1:8000` by default. Use
+`--service-url` to connect to another local service address. The model service
+must remain running while `main.py` or `runner.py` executes.
+
 Optional controls include `--paragraph-dense-pool`, `--batch-size`,
-`--chroma-db-path`, `--bill-collection`, `--paragraph-collection`, and `--contextual-reranking`. Stance
-detection runs automatically on the retained passages; use `--stance-claim` to
-provide a claim different from the retrieval query.
+`--contextual-reranking`, and `--service-url`. If the Chroma database or
+collection names differ from the service defaults, configure them in
+`model_service.py` before starting the service.
 
 ### Run all policy solutions
 
-To run the pipeline once for every policy solution in
-`data/policy_solutions_classified.json`, use:
+With the model service still running, use:
 
 ```bash
-python runner.py
+uv run python runner.py
 ```
 
 The runner invokes `main.py` sequentially and writes each run's artifacts to
