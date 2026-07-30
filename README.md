@@ -124,7 +124,7 @@ python chroma.py \
 <details>
 <summary>View output files</summary>
 
-The consolidated collaborator package is outputs/annotation_candidates_above_0.40.json. It contains one record per unique passage with rerank_score >= 0.40. When a passage appeared for multiple queries, the first occurrence is kept. The collaborator-facing records retain stable provenance fields (source run/file, Chroma ID, Affair_ID, speech/paragraph IDs, query, stance claim, topic, language, and text) so annotations can be joined back to the original outputs. Model scores and ranking fields are omitted.
+The consolidated collaborator package is outputs/annotation_candidates_above_0.40.json. It contains one record per unique passage with rerank_score >= 0.40. When a passage appeared for multiple queries, the first occurrence is kept. The collaborator-facing records retain stable provenance fields (source run/file, Chroma ID, Affair_ID, speech/paragraph IDs, query, stance claim, topic, language, and text) so annotations can be joined back to the original outputs. The original rerank_score is retained for later threshold and retrieval analysis; ranking fields are omitted.
 
 Each run writes a new directory under outputs/ containing:
 
