@@ -81,7 +81,7 @@ uv sync
 alternatively, use pip:
 
 ```bash
-pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly fastapi
+pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly fastapi streamlit
 ```
 
 The Chroma ingestion command consumes `data/speeches_with_text.parquet`. Generate it first by reassembling the original dataset from the 3 parts:
@@ -123,6 +123,8 @@ python chroma.py \
 
 <details>
 <summary>View output files</summary>
+
+The consolidated collaborator package is outputs/annotation_candidates_above_0.40.json. It contains one record per unique passage with rerank_score >= 0.40. When a passage appeared for multiple queries, the first occurrence is kept. The collaborator-facing records retain stable provenance fields (source run/file, Chroma ID, Affair_ID, speech/paragraph IDs, query, stance claim, topic, language, and text) so annotations can be joined back to the original outputs. Model scores and ranking fields are omitted.
 
 Each run writes a new directory under outputs/ containing:
 
