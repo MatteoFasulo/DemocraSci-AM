@@ -176,7 +176,6 @@ def cli(
     except requests.RequestException as exc:
         raise click.ClickException(
             f"Could not contact model service at {service_url}. "
-            "Start it with: uv run uvicorn model_service:app --host 127.0.0.1 --port 8000"
         ) from exc
 
     candidate_bills = pd.DataFrame(result["candidate_bills"])
