@@ -1,84 +1,27 @@
 # MappingDemocraSci
 
-MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swiss parliamentary speech. It retrieves bills with high recall, narrows their paragraphs with a cross-encoder, and applies a fine-tuned XLM-RoBERTa stance classifier to the retained evidence.
+MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swiss parliamentary speech. It retrieves bills with high recall, narrows their paragraphs with a cross-encoder, and applies a fine-tuned mDeBERTa stance classifier to the retained evidence.
 
 ## Pipeline overview
 
 ```mermaid
 flowchart TD
-    A[Speeches] --> B[Preprocessing and bill filtering]
-    B --> C[Bill retrieval<br/>top 50 bills]
-    C --> D[Select paragraphs from candidate bills]
-    D --> E[E5 paragraph dense pool]
-    E --> F[BGE cross-encoder reranking]
+    A[Raw speeches parquet] --> B[Prepare paragraphs]
+    B --> C[Chroma Bills collection]
+    C --> D[Top 50 bills and Affair_IDs]
+    D --> E[Chroma Paragraphs collection<br/>Affair_ID metadata filter]
+    E --> F[Qwen cross-encoder reranking]
     F --> G{Rerank threshold}
     G -->|Pass| H[Evidence passages]
     G -->|Discard| I[Unthresholded pool for evaluation]
-    H --> J[XLM-R stance prediction]
+    H --> J[mDeBERTa stance prediction]
     J --> K[Support/oppose probabilities and margin]
 ```
 
-## Embedding and Scoring
-
-Let $(q)$ be the retrieval query. For each bill $(b_i)$, the searchable text is
-
-$$
-x_i = \text{Bill-Title-DE}_i \,:: \text{Statutory-text}_i,
-$$
-
-where $(::)$ denotes concatenation.
-
-The encoder produces normalized vectors by embedding the query and each bill text:
-
-$$
-\mathbf{q} = E(\text{query: }q), \qquad
-\mathbf{b}_i = E(\text{passage: }x_i),
-$$
-
-and bill similarity is their dot product, equivalent to cosine similarity after
-normalization:
-
-$$
-s_{\mathrm{bill}}(q,b_i) = \mathbf{q}^{\top}\mathbf{b}_i.
-$$
-
->Note: the `query` and `passage` prefixes are used to distinguish the two types of text in the multilingual E5 encoder as indicated in the model card.
-
-The candidate bill set is the top $(K=50)$ bills ranked by
-this score:
-
-$$
-\mathcal{B}_K(q) = \text{TopK}_{b_i}\ s_{\mathrm{bill}}(q,b_i).
-$$
-
-Let $(p_j)$ be a speech paragraph linked to one of the selected bills. Paragraph
-embeddings are scored in the same way:
-
-$$
-\mathbf{p}_j = E(\text{passage: }p_j), \qquad
-s_{\mathrm{dense}}(q,p_j) = \mathbf{q}^{\top}\mathbf{p}_j.
-$$
-
-The dense paragraph pool contains the top $(M=100)$ paragraphs by $(s_{\mathrm{dense}})$. These paragraphs are then scored by the BGE cross-encoder $(R)$:
-
-$$
-s_{\mathrm{rerank}}(q,p_j) = \sigma(R(q,p_j)).
-$$
-
-whose output is bounded in $(0,1)$ by the sigmoid $(\sigma)$.
->Note: the original output of the BGE cross-encoder is unbounded, but we apply a sigmoid to produce a reranking score in $(0,1)$ as to later threshold the evidence pool.
-
-The final evidence set passed to stance detection is
-
-$$
-\mathcal{P}_{\tau}(q) = \{\ p_j \in \mathcal{P}_M(q) : s_{\mathrm{rerank}}(q,p_j) \geq \tau \}\,
-$$
-
-where $(\tau=0.4)$ is the reranking threshold. The complete unthresholded reranked pool is retained for evaluating the precision–recall tradeoff of $\tau$.
-
->Info: Bill retrieval is the recall stage: bill search text combines the German bill title and statutory text.
-
->Info: Paragraph reranking is the precision stage: it selects passages that address the query more closely before stance scoring. The unthresholded pool is always saved for threshold evaluation.
+Harrier (`microsoft/harrier-oss-v1-0.6b`) creates normalized embeddings for both
+collections. Bill documents combine German and French titles with statutory text
+from `data/bill_metadata_cache.json`; ideological summaries are not embedded.
+Paragraphs remain linked to bills through their `Affair_ID` metadata.
 
 ## RunAI
 
@@ -111,10 +54,10 @@ ssh root@localhost -p 2222
 The project requires Python 3.12 or newer. Install dependencies with:
 
 ```bash
-pip install --break-system-packages sentence-transformers streamlit openai
+pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly
 ```
 
-The CLI consumes `data/speeches_with_text.parquet` which must be generated beforehand. To reassemble the original dataset from the 3 parts, run:
+The Chroma ingestion command consumes `data/speeches_with_text.parquet`. Generate it first by reassembling the original dataset from the 3 parts:
 
 ```bash
 # We first concatenate the 3 parts into a single .gz file.
@@ -124,23 +67,41 @@ cat data/speeches_with_text.gz.part_* > data/speeches_with_text.gz
 gunzip < "data/speeches_with_text.gz" > "data/speeches_with_text.parquet"
 ```
 
+To ingest all eligible paragraphs and bills into Chroma, run:
+
+```bash
+python chroma.py --recreate
+```
+
+After ingestion, `main.py` reads only the persistent Chroma collections; it does
+not load the parquet at query time. If the collections use a non-default path,
+pass it with `--chroma-db-path`.
+
 ## Detailed pipeline
 
-1. `df_preprocessing()` filters bill-related rows, cleans text, and attaches cached OpenParldata metadata by `Affair_ID`.
-2. `df_bill_metadata()` aggregates one record per bill. `bill_search_text` contains `bill_title_de` plus `statutory_text`.
-3. `score_bills()` embeds the query and bill text with `intfloat/multilingual-e5-large`, ranks by cosine similarity, and keeps `N_TOP_BILLS` (50).
-4. `select_target_speeches()` restricts the paragraph corpus to the selected bills. E5 similarity forms the configurable dense pool.
-5. `score_paragraphs()` reranks that pool with `BAAI/bge-reranker-v2-m3`, saves all scores, and filters on `RERANK_THRESHOLD` (currently `0.4`).
-6. `score_stance()` compares each retained passage with the stance claim using `MatteoFasulo/xlm-roberta-xstance`. It outputs support/oppose probabilities and their margin; binary uncertainty is not a trained neutral class.
+1. `prepare_paragraphs()` filters the raw parquet to Motion and Parliamentary Initiative rows, cleans text, and removes empty or voting-marker paragraphs.
+2. `chroma.py` builds two persistent collections: one bill record per `Affair_ID` and one paragraph record per `speech_id:paragraph_id`.
+3. Bill documents embed German and French titles plus statutory text from `data/bill_metadata_cache.json`; ideological summaries are excluded.
+4. `score_bills()` queries the Chroma bill collection with Harrier embeddings and keeps `N_TOP_BILLS` (50).
+5. `score_paragraphs()` queries the paragraph collection with an `Affair_ID` metadata filter, then reranks the dense pool with `Qwen/Qwen3-Reranker-0.6B`. By default Qwen sees paragraph text only; `--contextual-reranking` also prepends the bill title in the paragraph's language.
+6. `score_stance()` compares each retained passage with the stance claim using `MatteoFasulo/mdeberta-v3-xstance`.
 
-`--topic` must be one of the 21 topics in `const.py`. If `--stance-claim` is omitted, the retrieval query is used for stance scoring as well.
+The ingestion command exposes independent HNSW settings for both collections. `ef_construction` changes require `--recreate`; `ef_search` can be updated on an existing collection:
+
+```bash
+python chroma.py \
+  --bills-ef-search 100 --bills-ef-construction 200 \
+  --paragraphs-ef-search 100 --paragraphs-ef-construction 200
+```
+
+`--topic` must be one of the 21 topics in `const.py`. The pipeline retrieves the top 50 bills, uses a paragraph dense pool of 100 by default, and applies the `0.40` rerank threshold from `const.py`. If `--stance-claim` is omitted, the retrieval query is used for stance scoring as well.
 
 ## Outputs
 
 Each run writes a new directory under `outputs/` containing:
 
 - `candidate_bills.json`: the top 50 bills retrieved for the query.
-- `candidate_passages_before_threshold.json`: the full dense pool of passages ranked by the BGE cross-encoder before filtering to inspect the reranker score distribution.
+- `candidate_passages_before_threshold.json`: the Chroma dense pool ranked by the Qwen cross-encoder before threshold filtering.
 - `candidate_passages.json`: the filtered passages with `rerank_score >= RERANK_THRESHOLD`.
 - `stance_predictions.json`: the stance predictions for each passage, including the predicted stance label.
 - `manifest.json`: a manifest of the run, including the retrieval query, stance claim, topic, and other parameters.
@@ -154,7 +115,10 @@ python main.py \
   --retrieval-query "Should Switzerland strive for a free-trade agreement with the US?"
 ```
 
-Optional controls include `--paragraph-dense-pool` and `--batch-size`.
+Optional controls include `--paragraph-dense-pool`, `--batch-size`,
+`--chroma-db-path`, `--bill-collection`, `--paragraph-collection`, and `--contextual-reranking`. Stance
+detection runs automatically on the retained passages; use `--stance-claim` to
+provide a claim different from the retrieval query.
 
 ### Run all policy solutions
 
@@ -167,20 +131,6 @@ python runner.py
 
 The runner invokes `main.py` sequentially and writes each run's artifacts to
 a separate directory under `outputs/`.
-
-## Dashboard
-
-The same workflow is available through Streamlit:
-
-```bash
-streamlit run dashboard.py
-```
-
-Enter a retrieval query, select a topic, and optionally provide a separate stance claim. The dashboard writes the same JSON artifacts and manifest as the CLI under the configured output directory.
-
-## Human evaluation
-
-TBD via streamlit dashboard.
 
 ## Docker (broken)
 
