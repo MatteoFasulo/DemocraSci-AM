@@ -217,7 +217,7 @@ def cli(
                device=stance_device,
                batch_size=batch_size,
            )
-        save_stance_results(stance_results, run_dir / "stance_predictions.json")
+    save_stance_results(stance_results, run_dir / "stance_predictions.json")
 
     config = {
         "chroma_db_path": str(chroma_db_path),
