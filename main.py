@@ -26,8 +26,10 @@ from const import EMBEDDING_MODEL, N_TOP_BILLS, PREDEFINED_21_TOPICS, RERANK_THR
 from data_preprocessing import df_bill_metadata, df_preprocessing
 from stance_detection import (
     load_stance_classifier,
+    load_stance_custom_client,
     save_stance_results,
     score_stance,
+    score_stance_custom,
 )
 
 
@@ -82,18 +84,28 @@ def save_manifest(path: Path, config: dict[str, Any], counts: dict[str, int]) ->
 
 
 @click.command(context_settings={"show_default": True})
-@click.option(
-    "--input-data",
-    type=click.Path(path_type=Path, dir_okay=False, exists=True),
-    default=Path("data/speeches_with_text.parquet"),
-)
+@click.option("--input-data", type=click.Path(path_type=Path, dir_okay=False, exists=True),
+              default=Path("data/speeches_with_text.parquet"))
 @click.option("--output-dir", type=click.Path(path_type=Path, file_okay=False), default=Path("outputs"))
-@click.option("--run-name", required=True, help="Stable label for this retrieval and annotation run.")
-@click.option("--topic", type=click.Choice(PREDEFINED_21_TOPICS), required=True, help="Broad policy target topic used for grouping runs.")
-@click.option("--retrieval-query", required=True, help="Broad query used to retrieve bills and evidence.")
-@click.option("--stance-claim", default=None, help="Policy claim used for stance detection.")
-@click.option("--paragraph-dense-pool", type=click.IntRange(min=1), default=100, help="Passages sent to the cross-encoder.")
-@click.option("--batch-size", type=click.IntRange(min=1), default=64, help="Batch size for embedding and cross-encoder scoring.")
+@click.option("--run-name", required=True,
+              help="Stable label for this retrieval and annotation run.")
+@click.option("--topic", type=click.Choice(PREDEFINED_21_TOPICS), required=True,
+              help="Broad policy target topic used for grouping runs.")
+@click.option("--retrieval-query", required=True,
+              help="Broad query used to retrieve bills and evidence.")
+@click.option("--stance-claim", default=None,
+              help="Policy claim used for stance detection.")
+@click.option("--paragraph-dense-pool", type=click.IntRange(min=1), default=100,
+              help="Passages sent to the cross-encoder.")
+@click.option("--batch-size", type=click.IntRange(min=1), default=64,
+              help="Batch size for embedding and cross-encoder scoring.")
+@click.option("--stance-api-base-url", default=None,
+              help="Base URL for the custom stance detection API. "
+                   "If provided, a custom stance model will be used instead of the default model.")
+@click.option("--stance-api-key", default=None,
+              help="API key for the custom stance detection API. "
+                   "If provided, a custom stance model will be used instead of the default model.")
+
 def cli(
     input_data: Path,
     output_dir: Path,
@@ -103,6 +115,8 @@ def cli(
     stance_claim: str,
     paragraph_dense_pool: int,
     batch_size: int,
+    stance_api_base_url: str | None,
+    stance_api_key: str | None,
 ) -> None:
     configure_logging()
     stance_claim = stance_claim or retrieval_query
@@ -142,16 +156,25 @@ def cli(
     save_records(passages_before_threshold, run_dir / "candidate_passages_before_threshold.json")
     save_records(passages, run_dir / "candidate_passages.json")
 
-    #tokenizer, stance_model_object, stance_device = load_stance_classifier()
-    #stance_results = score_stance(
-    #    passages,
-    #    stance_claim=stance_claim,
-    #    tokenizer=tokenizer,
-    #    model=stance_model_object,
-    #    device=stance_device,
-    #    batch_size=batch_size,
-    #)
-    #save_stance_results(stance_results, run_dir / "stance_predictions.json")
+    if stance_api_base_url:
+        stance_client = load_stance_custom_client(api_key=stance_api_key, base_url=stance_api_base_url)
+        stance_results = score_stance_custom(
+            passages,
+            stance_claim=stance_claim,
+            client=stance_client,
+            model_name=STANCE_DETECTION_MODEL,
+        )
+    else:
+        tokenizer, stance_model_object, stance_device = load_stance_classifier()
+        stance_results = score_stance(
+            passages,
+            stance_claim=stance_claim,
+            tokenizer=tokenizer,
+            model=stance_model_object,
+            device=stance_device,
+            batch_size=batch_size,
+        )
+    save_stance_results(stance_results, run_dir / "stance_predictions.json")
 
     config = {
         "input_data": str(input_data),
@@ -175,7 +198,7 @@ def cli(
             "candidate_bills": len(candidate_bills),
             "candidate_passages_before_threshold": len(passages_before_threshold),
             "candidate_passages": len(passages),
-            #"stance_predictions": len(stance_results),
+            "stance_predictions": len(stance_results),
         },
     )
     logger.info("Saved JSON records and manifest. Run completed in %.2f seconds.", time.time() - start_time)

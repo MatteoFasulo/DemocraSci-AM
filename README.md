@@ -156,6 +156,39 @@ python main.py \
 
 Optional controls include `--paragraph-dense-pool` and `--batch-size`.
 
+### Custom stance LLM backend
+
+By default, stance detection uses the local classifier configured via
+`STANCE_DETECTION_MODEL` in `const.py`. To use a chat LLM served behind an
+OpenAI-compatible endpoint instead (e.g. an internal vLLM gateway), pass
+`--stance-api-base-url` and `--stance-api-key`:
+
+```bash
+python main.py \
+  --run-name free-trade-us \
+  --topic "International Affairs" \
+  --retrieval-query "Should Switzerland strive for a free-trade agreement with the US?" \
+  --stance-api-base-url "$API_BASE_URL" \
+  --stance-api-key "$API_KEY"
+```
+
+`--stance-api-key` expects the resolved secret, not a `keys.json` alias — use
+`llm keys get <alias>` (or `llm.get_key(explicit_key=<alias>)` in Python) to
+resolve it first, as shown above, e.g.
+
+```bash                                                              
+export API_BASE_URL="https://.../v1" 
+export API_KEY="$(llm keys get sdsc-key)" 
+```
+
+**Important:** whenever `--stance-api-base-url` is set, `STANCE_DETECTION_MODEL`
+in `const.py` must hold the model name served at that endpoint (e.g.
+`Qwen/Qwen3.6-35B-A3B-FP8`), not a local Hugging Face classifier repo ID — the
+same constant is used for both backends and is not automatically kept in sync.
+Leaving `--stance-api-base-url` unset falls back to the local classifier, which
+requires `STANCE_DETECTION_MODEL` to point at a real sequence-classification
+checkpoint instead.
+
 ### Run all policy solutions
 
 To run the pipeline once for every policy solution in
