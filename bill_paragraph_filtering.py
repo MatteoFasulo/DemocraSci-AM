@@ -1,181 +1,149 @@
-"""Retrieve bills and rank evidence passages within selected bills.
-
-Bill retrieval uses a multilingual E5 bi-encoder for high recall. Paragraphs
-are reduced to an embedding dense pool and reranked with a BGE cross-encoder
-for higher precision.
-"""
+"""Retrieve bills and evidence paragraphs from Chroma."""
 
 from __future__ import annotations
 
-import json
-from hashlib import sha256
-from pathlib import Path
-from typing import Iterable
-
-import numpy as np
 import pandas as pd
 import torch
-from safetensors import safe_open
-from safetensors.numpy import save_file
-from sentence_transformers import SentenceTransformer, CrossEncoder
+from chromadb.api.models.Collection import Collection
+from sentence_transformers import CrossEncoder
 
-from const import RERANKER_MODEL, EMBEDDING_MODEL, RERANK_THRESHOLD
-
-DEFAULT_BILL_EMBEDDINGS_CACHE = Path("data/bill_embeddings.safetensors")
-
-def load_embedding_model(device: torch.device | str | None = None) -> SentenceTransformer:
-    """Load the configured multilingual E5 embedding model."""
-    return SentenceTransformer(EMBEDDING_MODEL, device=device, model_kwargs={"dtype": "auto"})
+from const import RERANKER_MODEL, RERANK_THRESHOLD
 
 
-def load_reranker_model(device: torch.device | str | None = None, act_fn: str = "sigmoid") -> CrossEncoder:
-    """Load the configured BGE cross-encoder reranker."""
-
-    POLICY_RELEVANCE_PROMPT = "Classify whether the document matches the query policy claim"
+def load_reranker_model(
+    device: torch.device | str | None = None,
+    act_fn: str = "sigmoid",
+    instruction: str = "Classify whether the document matches the query policy claim",
+) -> CrossEncoder:
+    """Load the Qwen cross-encoder reranker."""
     return CrossEncoder(
         RERANKER_MODEL,
         device=device,
-        max_length=512,
         activation_fn=torch.nn.Sigmoid() if act_fn == "sigmoid" else torch.nn.Identity(),
-        model_kwargs={"torch_dtype": torch.bfloat16},
-        prompts={"policy_relevance": POLICY_RELEVANCE_PROMPT},
-        default_prompt_name="policy_relevance"
+        prompts={"classification": instruction},
+        default_prompt_name="classification",
     )
 
-def encode_queries(
-    model: SentenceTransformer,
-    texts: str | Iterable[str],
-    batch_size: int = 256,
-) -> np.ndarray:
-    """Encode retrieval queries"""
-    if isinstance(texts, str):
-        texts = [texts]
 
-    return model.encode(
-        [f"{str(text).strip()}" for text in texts],
-        prompt_name="sts_query",
-        batch_size=batch_size,
-        normalize_embeddings=True,
-        convert_to_numpy=True,
-        show_progress_bar=False,
+def score_bills(retrieval_query: str, bill_collection: Collection, top_k_bills: int) -> pd.DataFrame:
+    """Return bills ranked by Chroma cosine similarity."""
+    result = bill_collection.query(
+        query_texts=[retrieval_query],
+        n_results=top_k_bills,
+        include=["documents", "metadatas", "distances"],
     )
-
-def load_or_build_bill_embeddings(
-    df: pd.DataFrame,
-    model: SentenceTransformer,
-    cache_path: Path = DEFAULT_BILL_EMBEDDINGS_CACHE,
-) -> np.ndarray:
-    """Load bill embeddings from the cache and encode changed bills.
-
-    Cache entries are keyed by ``Affair_ID`` and invalidated when the source
-    ``bill_search_text`` hash changes.
-    """
-    ids = df["Affair_ID"].astype(str).to_numpy()
-    texts = df["bill_search_text"].fillna("").astype(str).to_numpy()
-    text_hashes = np.array([sha256(text.encode()).hexdigest() for text in texts])
-    cached_embeddings: dict[str, np.ndarray] = {}
-    cached_hashes: dict[str, str] = {}
-    if cache_path.exists():
-        try:
-            with safe_open(str(cache_path), framework="numpy") as cached:
-                matrix = cached.get_tensor("bill_embeddings")
-                cached_ids = cached.get_tensor("affair_ids").astype(str)
-                cached_hashes = json.loads(cached.metadata().get("text_hashes", "{}"))
-            cached_embeddings = dict(zip(cached_ids, matrix, strict=False))
-        except (OSError, ValueError, KeyError, json.JSONDecodeError):
-            pass
-
-    missing = [i for i, affair_id in enumerate(ids) if cached_hashes.get(affair_id) != text_hashes[i]]
-    if missing:
-        new_embeddings = encode_queries(model, texts[missing], batch_size=16).astype(np.float32)
-        for row, embedding in zip(missing, new_embeddings, strict=False):
-            cached_embeddings[ids[row]] = embedding
-
-    embeddings = np.vstack([cached_embeddings[affair_id] for affair_id in ids]).astype(np.float32)
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    save_file(
-        {"bill_embeddings": embeddings, "affair_ids": np.asarray([int(affair_id) for affair_id in ids], dtype=np.int64)},
-        str(cache_path),
-        metadata={"text_hashes": json.dumps(dict(zip(ids, text_hashes, strict=False)))},
-    )
-    return embeddings
-
-def score_bills(
-    retrieval_query: str,
-    bill_metadata_df: pd.DataFrame,
-    embedding_model: SentenceTransformer,
-    top_k_bills: int,
-) -> pd.DataFrame:
-    """Return the top bills ranked by cosine similarity to the query."""
-    if bill_metadata_df.empty:
-        return bill_metadata_df.copy()
-
-    result = bill_metadata_df.copy().reset_index(drop=True)
-    query_embedding = encode_queries(embedding_model, retrieval_query)
-    bill_embeddings = load_or_build_bill_embeddings(result, embedding_model)
-    similarities = (query_embedding @ bill_embeddings.T) * 100
-    result["bill_embedding_score"] = similarities.ravel()
-    result["bill_embedding_rank"] = result["bill_embedding_score"].rank(
-        ascending=False, method="first"
-    ).astype(int)
-    result = result.sort_values("bill_embedding_score", ascending=False).head(top_k_bills).copy()
-    result["bill_rank"] = np.arange(1, len(result) + 1)
-    return result.reset_index(drop=True)
+    ids = result.get("ids", [[]])[0]
+    if not ids:
+        return pd.DataFrame()
+    rows = []
+    for rank, (bill_id, document, metadata, distance) in enumerate(
+        zip(
+            ids,
+            result["documents"][0],
+            result["metadatas"][0],
+            result["distances"][0],
+            strict=True,
+        ),
+        start=1,
+    ):
+        row = dict(metadata or {})
+        row["Affair_ID"] = str(row.get("Affair_ID", bill_id))
+        row["bill_search_text"] = document
+        row["bill_embedding_score"] = (1.0 - float(distance)) * 100
+        row["bill_embedding_rank"] = rank
+        row["bill_rank"] = rank
+        rows.append(row)
+    return pd.DataFrame(rows)
 
 
 def select_target_speeches(df: pd.DataFrame, candidate_bills: pd.DataFrame) -> pd.DataFrame:
-    """Keep speech paragraphs whose ``Affair_ID`` belongs to a candidate bill."""
+    """Retained for callers that need to inspect the local corpus."""
     if df.empty or candidate_bills.empty:
         return df.iloc[0:0].copy()
     affair_ids = set(candidate_bills["Affair_ID"].astype(str))
     return df[df["Affair_ID"].astype(str).isin(affair_ids)].copy().reset_index(drop=True)
 
 
+def build_rerank_documents(passages: pd.DataFrame, contextual_reranking: bool) -> list[str]:
+    """Build the documents sent to Qwen while preserving original output text."""
+    if not contextual_reranking:
+        return passages["text"].astype(str).tolist()
+
+    documents = []
+    for row in passages.itertuples(index=False):
+        values = row._asdict()
+        language = str(values.get("language", "")).upper()
+        title_column = "bill_title_de" if language == "DE" else "bill_title_fr"
+        title = str(values.get(title_column, "") or "").strip()
+        paragraph = str(values.get("text", ""))
+        documents.append(f"Bill title: {title}\n\nParagraph: {paragraph}" if title else paragraph)
+    return documents
+
+
 def score_paragraphs(
     topic: str,
     retrieval_query: str,
     stance_claim: str,
-    speeches_df: pd.DataFrame,
+    paragraph_collection: Collection,
+    candidate_bills: pd.DataFrame,
     reranker: CrossEncoder,
     dense_pool_size: int,
     batch_size: int,
+    contextual_reranking: bool = False,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Rank candidate paragraphs and apply ``RERANK_THRESHOLD``.
-
-    The embedding score selects the dense pool. The cross-encoder assigns
-    ``rerank_score`` and determines the final filtered set. The returned tuple
-    is ``(pool_before_threshold, filtered_passages)``.
-    """
-    if speeches_df.empty:
-        empty = speeches_df.copy()
+    """Retrieve a Chroma paragraph pool and rerank it with Qwen."""
+    if candidate_bills.empty:
+        empty = pd.DataFrame()
         return empty, empty
-
-    passages = speeches_df.copy().reset_index(drop=True)
-    # HACK: CrossEncoder runs on the full set of passages from the TopK Bills (no pre-selection applied).
+    affair_ids = candidate_bills["Affair_ID"].astype(str).tolist()
+    result = paragraph_collection.query(
+        query_texts=[retrieval_query],
+        n_results=dense_pool_size,
+        where={"Affair_ID": {"$in": affair_ids}},
+        include=["documents", "metadatas", "distances"],
+    )
+    ids = result.get("ids", [[]])[0]
+    if not ids:
+        empty = pd.DataFrame()
+        return empty, empty
+    passages = []
+    for index, (paragraph_id, document, metadata, distance) in enumerate(
+        zip(
+            ids,
+            result["documents"][0],
+            result["metadatas"][0],
+            result["distances"][0],
+            strict=True,
+        )
+    ):
+        row = dict(metadata or {})
+        row.update(
+            {
+                "chroma_id": paragraph_id,
+                "text": document,
+                "corpus_id": index,
+                "dense_score": (1.0 - float(distance)) * 100,
+            }
+        )
+        passages.append(row)
+    passage_df = pd.DataFrame(passages)
+    rerank_documents = build_rerank_documents(passage_df, contextual_reranking)
     ranked = reranker.rank(
         query=stance_claim,
-        documents=passages["text"].tolist(), # the paragraphs are the documents to be reranked
-        top_k=dense_pool_size, # We take TopK passages out of the full re-ranking distribution.
+        documents=rerank_documents,
+        top_k=len(passage_df),
         return_documents=False,
         batch_size=batch_size,
         show_progress_bar=True,
     )
-    ranking = pd.DataFrame(ranked)
-
-    pool = ranking.merge(
-        passages.reset_index().rename(columns={"index": "corpus_id"}),
-        on="corpus_id",
-        how="left",
-    )
+    pool = pd.DataFrame(ranked).merge(passage_df, on="corpus_id", how="left")
     if "score" in pool.columns:
         pool = pool.rename(columns={"score": "rerank_score"})
     elif "rerank_score" not in pool.columns:
         raise ValueError("Reranker output does not expose a score field")
-
     pool = pool.sort_values("rerank_score", ascending=False).reset_index(drop=True)
     pool["retrieval_query"] = retrieval_query
     pool["stance_claim"] = stance_claim
     pool["topic"] = topic
-
     filtered = pool[pool["rerank_score"] >= RERANK_THRESHOLD].copy().reset_index(drop=True)
     return pool, filtered

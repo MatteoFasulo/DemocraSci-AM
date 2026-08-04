@@ -1,8 +1,11 @@
 {
-  "created_at": "2026-07-23T10:51:54.568903+00:00",
+  "created_at": "2026-07-30T11:55:49.483851+00:00",
   "device": "cuda",
   "config": {
-    "input_data": "data/speeches_with_text.parquet",
+    "chroma_db_path": "/mydata/politperformance/shared/matteof/chromadb",
+    "bill_collection": "DemocraSci_bills",
+    "paragraph_collection": "DemocraSci_paragraphs",
+    "contextual_reranking": false,
     "run_name": "002-Lega-Reject higher parking fees (reduce them instead) and stop cuts to parking spaces.",
     "topic": "(Public) Transportation",
     "retrieval_query": "Reject higher parking fees (reduce them instead) and stop cuts to parking spaces.",
@@ -10,16 +13,14 @@
     "top_bills": 50,
     "paragraph_dense_pool": 100,
     "rerank_threshold": 0.4,
-    "embedding_model": "intfloat/multilingual-e5-large",
-    "stance_model": "MatteoFasulo/xlm-roberta-xstance"
+    "embedding_model": "microsoft/harrier-oss-v1-0.6b",
+    "stance_model": "MatteoFasulo/mdeberta-v3-xstance"
   },
   "counts": {
-    "raw_rows": 666691,
     "eligible_paragraphs": 169679,
     "available_bills": 5437,
     "candidate_bills": 50,
     "candidate_passages_before_threshold": 100,
-    "candidate_passages": 0,
-    "stance_predictions": 0
+    "candidate_passages": 2
   }
 }

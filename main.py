@@ -11,19 +11,19 @@ from typing import Any
 
 import click
 import pandas as pd
+import requests
 import torch
 from huggingface_hub.utils import disable_progress_bars
 from transformers.utils import logging as transformers_logging
 
-from bill_paragraph_filtering import (
-    load_reranker_model,
-    load_embedding_model,
-    score_bills,
-    score_paragraphs,
-    select_target_speeches,
+from scripts.chroma_store import DEFAULT_CHROMA_PATH
+from const import (
+    EMBEDDING_MODEL,
+    N_TOP_BILLS,
+    PREDEFINED_21_TOPICS,
+    RERANK_THRESHOLD,
+    STANCE_DETECTION_MODEL,
 )
-from const import EMBEDDING_MODEL, N_TOP_BILLS, PREDEFINED_21_TOPICS, RERANK_THRESHOLD, STANCE_DETECTION_MODEL
-from data_preprocessing import df_bill_metadata, df_preprocessing
 from stance_detection import (
     load_stance_classifier,
     load_stance_custom_client,
@@ -81,33 +81,71 @@ def save_manifest(path: Path, config: dict[str, Any], counts: dict[str, int]) ->
     path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-
-
 @click.command(context_settings={"show_default": True})
-@click.option("--input-data", type=click.Path(path_type=Path, dir_okay=False, exists=True),
-              default=Path("data/speeches_with_text.parquet"))
-@click.option("--output-dir", type=click.Path(path_type=Path, file_okay=False), default=Path("outputs"))
-@click.option("--run-name", required=True,
-              help="Stable label for this retrieval and annotation run.")
-@click.option("--topic", type=click.Choice(PREDEFINED_21_TOPICS), required=True,
-              help="Broad policy target topic used for grouping runs.")
-@click.option("--retrieval-query", required=True,
-              help="Broad query used to retrieve bills and evidence.")
-@click.option("--stance-claim", default=None,
-              help="Policy claim used for stance detection.")
-@click.option("--paragraph-dense-pool", type=click.IntRange(min=1), default=100,
-              help="Passages sent to the cross-encoder.")
-@click.option("--batch-size", type=click.IntRange(min=1), default=64,
-              help="Batch size for embedding and cross-encoder scoring.")
+@click.option(
+    "--output-dir",
+    type=click.Path(path_type=Path, file_okay=False),
+    default=Path("outputs"),
+)
+@click.option(
+    "--run-name",
+    required=True,
+    help="Stable label for this retrieval and annotation run.",
+)
+@click.option(
+    "--topic",
+    type=click.Choice(PREDEFINED_21_TOPICS),
+    required=True,
+    help="Broad policy target topic used for grouping runs.",
+)
+@click.option(
+    "--retrieval-query",
+    required=True,
+    help="Broad query used to retrieve bills and evidence.",
+)
+@click.option("--stance-claim", default=None, help="Policy claim used for stance detection.")
+@click.option(
+    "--paragraph-dense-pool",
+    type=click.IntRange(min=1),
+    default=100,
+    help="Passages sent to the cross-encoder.",
+)
+@click.option(
+    "--batch-size",
+    type=click.IntRange(min=1),
+    default=128,
+    help="Batch size for Qwen reranking.",
+)
+@click.option(
+    "--chroma-db-path",
+    type=click.Path(path_type=Path, file_okay=False),
+    default=DEFAULT_CHROMA_PATH,
+    help="Persistent Chroma database directory.",
+)
+@click.option("--bill-collection", default="DemocraSci_bills", help="Chroma bill collection name.")
+@click.option(
+    "--paragraph-collection",
+    default="DemocraSci_paragraphs",
+    help="Chroma paragraph collection name.",
+)
+@click.option(
+    "--service-url",
+    default="http://127.0.0.1:8000",
+    show_default=True,
+    help="Local model service URL.",
+)
+@click.option(
+    "--contextual-reranking/--no-contextual-reranking",
+    default=False,
+    help="Include the language-matched bill title in Qwen reranking documents.",
+)
 @click.option("--stance-api-base-url", default=None,
               help="Base URL for the custom stance detection API. "
                    "If provided, a custom stance model will be used instead of the default model.")
 @click.option("--stance-api-key", default=None,
               help="API key for the custom stance detection API. "
                    "If provided, a custom stance model will be used instead of the default model.")
-
 def cli(
-    input_data: Path,
     output_dir: Path,
     run_name: str,
     topic: str,
@@ -117,6 +155,11 @@ def cli(
     batch_size: int,
     stance_api_base_url: str | None,
     stance_api_key: str | None,
+    chroma_db_path: Path,
+    bill_collection: str,
+    paragraph_collection: str,
+    service_url: str,
+    contextual_reranking: bool,
 ) -> None:
     configure_logging()
     stance_claim = stance_claim or retrieval_query
@@ -124,35 +167,32 @@ def cli(
     logger.info("Writing run artifacts to %s", run_dir)
 
     start_time = time.time()
-    raw = pd.read_parquet(input_data)
-    logger.info("Loaded %d rows from %s", len(raw), input_data)
+    payload = {
+        "topic": topic,
+        "retrieval_query": retrieval_query,
+        "stance_claim": stance_claim,
+        "paragraph_dense_pool": paragraph_dense_pool,
+        "batch_size": batch_size,
+        "contextual_reranking": contextual_reranking,
+    }
+    try:
+        response = requests.post(
+            f"{service_url.rstrip('/')}/search",
+            json=payload,
+            timeout=3600,
+        )
+        response.raise_for_status()
+        result = response.json()
+    except requests.RequestException as exc:
+        raise click.ClickException(
+            f"Could not contact model service at {service_url}. "
+        ) from exc
 
-    speeches = df_preprocessing(raw)
-    logger.info("Preprocessed %d rows into %d paragraphs", len(raw), len(speeches))
-
-    bills = df_bill_metadata(speeches)
-    logger.info("Prepared %d paragraphs and %d bills", len(speeches), len(bills))
-
-    embedding_model = load_embedding_model(DEVICE)
-    reranker = load_reranker_model(DEVICE)
-    candidate_bills = score_bills(
-        retrieval_query=retrieval_query,
-        bill_metadata_df=bills,
-        embedding_model=embedding_model,
-        top_k_bills=N_TOP_BILLS,
-    )
+    candidate_bills = pd.DataFrame(result["candidate_bills"])
     save_records(candidate_bills, run_dir / "candidate_bills.json")
 
-    target_speeches = select_target_speeches(speeches, candidate_bills)
-    passages_before_threshold, passages = score_paragraphs(
-        topic=topic,
-        retrieval_query=retrieval_query,
-        stance_claim=stance_claim,
-        speeches_df=target_speeches,
-        reranker=reranker,
-        dense_pool_size=paragraph_dense_pool,
-        batch_size=batch_size,
-    )
+    passages_before_threshold = pd.DataFrame(result["candidate_passages_before_threshold"])
+    passages = pd.DataFrame(result["candidate_passages"])
     save_records(passages_before_threshold, run_dir / "candidate_passages_before_threshold.json")
     save_records(passages, run_dir / "candidate_passages.json")
 
@@ -165,19 +205,25 @@ def cli(
             model_name=STANCE_DETECTION_MODEL,
         )
     else:
-        tokenizer, stance_model_object, stance_device = load_stance_classifier()
-        stance_results = score_stance(
-            passages,
-            stance_claim=stance_claim,
-            tokenizer=tokenizer,
-            model=stance_model_object,
-            device=stance_device,
-            batch_size=batch_size,
-        )
-    save_stance_results(stance_results, run_dir / "stance_predictions.json")
+        if passages.empty:
+           stance_results = passages.copy()
+        else:
+           tokenizer, stance_model_object, stance_device = load_stance_classifier()
+           stance_results = score_stance(
+               passages,
+               stance_claim=stance_claim,
+               tokenizer=tokenizer,
+               model=stance_model_object,
+               device=stance_device,
+               batch_size=batch_size,
+           )
+        save_stance_results(stance_results, run_dir / "stance_predictions.json")
 
     config = {
-        "input_data": str(input_data),
+        "chroma_db_path": str(chroma_db_path),
+        "bill_collection": bill_collection,
+        "paragraph_collection": paragraph_collection,
+        "contextual_reranking": contextual_reranking,
         "run_name": run_name,
         "topic": topic,
         "retrieval_query": retrieval_query,
@@ -192,16 +238,18 @@ def cli(
         run_dir / "manifest.json",
         config,
         {
-            "raw_rows": len(raw),
-            "eligible_paragraphs": len(speeches),
-            "available_bills": len(bills),
+            "eligible_paragraphs": result["eligible_paragraphs"],
+            "available_bills": result["available_bills"],
             "candidate_bills": len(candidate_bills),
             "candidate_passages_before_threshold": len(passages_before_threshold),
             "candidate_passages": len(passages),
             "stance_predictions": len(stance_results),
         },
     )
-    logger.info("Saved JSON records and manifest. Run completed in %.2f seconds.", time.time() - start_time)
+    logger.info(
+        "Saved JSON records and manifest. Run completed in %.2f seconds.",
+        time.time() - start_time,
+    )
 
 
 if __name__ == "__main__":
