@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from bill_paragraph_filtering import load_reranker_model, score_bills, score_paragraphs
@@ -50,11 +50,16 @@ def load_models() -> None:
     app.state.models = ServiceState()
 
 
-@app.get("/health")
-def health() -> dict[str, Any]:
+def get_service_state() -> ServiceState:
+    """Return the startup-initialized service state for request handlers."""
     state = getattr(app.state, "models", None)
     if state is None:
         raise HTTPException(status_code=503, detail="Models are not initialized")
+    return state
+
+
+@app.get("/health")
+def health(state: ServiceState = Depends(get_service_state)) -> dict[str, Any]:
     return {
         "status": "ok",
         "bills": state.bill_store.count(),
@@ -63,8 +68,10 @@ def health() -> dict[str, Any]:
 
 
 @app.post("/search")
-def search(request: SearchRequest) -> dict[str, Any]:
-    state: ServiceState = app.state.models
+def search(
+    request: SearchRequest,
+    state: ServiceState = Depends(get_service_state),
+) -> dict[str, Any]:
     with state.lock:
         candidate_bills = score_bills(request.retrieval_query, state.bill_store, N_TOP_BILLS)
         before_threshold, passages = score_paragraphs(

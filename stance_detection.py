@@ -7,17 +7,21 @@ Two interchangeable backends are available:
   Binary-model uncertainty is represented by the stored support/oppose margin
   rather than silently relabeled as a trained neutral class.
 - ``load_stance_custom_client`` / ``score_stance_custom``: a chat LLM served behind
-  an OpenAI-compatible endpoint (e.g. vLLM), constrained to the same
-  SUPPORT/OPPOSE/NEUTRAL labels via guided decoding. Use this when no local
-  classifier is available for the language/domain.
+  an OpenAI-compatible endpoint (e.g. vLLM), requested to emit the labels
+  ``A`` (IN FAVOR), ``B`` (AGAINST), or ``C`` (NEUTRAL) via guided decoding.
+  If guided decoding is ignored, the scorer uses first-token logprobs for
+  those three labels. Use this when no local classifier is available for the
+  language/domain.
 
-Both scorers produce the same output schema, so callers can swap one for the
-other without touching ``save_stance_results`` or downstream code.
+Both scorers produce the same core outputs (stance, confidence, margin,
+and hypothesis), so callers can swap one for the other without changing the
+pipeline. Probability column names follow the backend's label vocabulary.
 """
 
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -27,19 +31,19 @@ import torch
 from openai import OpenAI
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from const import STANCE_DETECTION_MODEL
-from llm_labelling import get_openai_client, get_probabilities
+from const import STANCE_DETECTION_MODEL, STANCE_LLM_LABELS, STANCE_LLM_SYSTEM_PROMPT
 
-_STANCE_LLM_LABELS = ("SUPPORT", "OPPOSE", "NEUTRAL")
-
-_STANCE_LLM_SYSTEM_PROMPT = (
-    "You are an annotator for political science. Decide whether the passage "
-    "supports, opposes, or is neutral toward the claim. Respond with exactly "
-    "one label: SUPPORT, OPPOSE, or NEUTRAL."
-)
+STANCE_CLASSES = tuple(STANCE_LLM_LABELS.values())
 
 
-def load_stance_classifier(model_name: str = STANCE_DETECTION_MODEL) -> tuple[AutoTokenizer, AutoModelForSequenceClassification, torch.device]:
+def get_openai_client(api_key: str, base_url: str) -> OpenAI:
+    """Create an OpenAI-compatible client for a configured endpoint."""
+    return OpenAI(api_key=api_key, base_url=base_url)
+
+
+def load_stance_classifier(
+    model_name: str = STANCE_DETECTION_MODEL,
+) -> tuple[AutoTokenizer, AutoModelForSequenceClassification, torch.device]:
     """Load the tokenizer and classifier, selecting CUDA when available."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -56,8 +60,8 @@ def load_stance_custom_client(
     """Create an OpenAI-compatible client for a vLLM-served stance LLM.
 
     Falls back to the ``OPENAI_API_KEY`` / ``OPENAI_API_BASE_URL`` environment
-    variables used elsewhere in this project (see ``llm_labelling.py``) when
-    ``api_key`` / ``base_url`` aren't passed explicitly.
+    variables used by the project when ``api_key`` / ``base_url`` aren't
+    passed explicitly.
     """
     api_key = api_key or os.environ.get("OPENAI_API_KEY")
     base_url = base_url or os.environ.get("OPENAI_API_BASE_URL")
@@ -78,11 +82,17 @@ def label_ids(model: AutoModelForSequenceClassification) -> dict[str, int]:
     }
 
 
-def _prepare_scored_frame(df: pd.DataFrame, stance_claim: str) -> tuple[pd.DataFrame, list[str], list[str]]:
+def _prepare_scored_frame(
+    df: pd.DataFrame, stance_claim: str
+) -> tuple[pd.DataFrame, list[str], list[str]]:
     """Resolve the passage-text column and stage claim/passage data shared by both scoring backends."""
     scored = df.copy().reset_index(drop=True)
     # Accept serialized candidate files that call the corpus text "passage".
-    text_column = "text" if "text" in scored.columns else "passage" if "passage" in scored.columns else None
+    text_column = (
+        "text"
+        if "text" in scored.columns
+        else "passage" if "passage" in scored.columns else None
+    )
     if text_column is None:
         raise ValueError("Stance scoring requires a 'text' or 'passage' column")
     passages = scored[text_column].fillna("").astype(str).tolist()
@@ -119,7 +129,7 @@ def score_stance(
             encoded = tokenizer(
                 batch_hypotheses,
                 batch_passages,
-                truncation="only_second", # Truncate only the passage (second sequence) to preserve the stance claim (first sequence).
+                truncation="only_second",  # Truncate only the passage (second sequence) to preserve the stance claim (first sequence).
                 max_length=512,
                 return_tensors="pt",
                 padding=True,
@@ -145,7 +155,9 @@ def score_stance(
     scored["stance_prob_neutral"] = (
         probs_arr[:, neutral_id] if neutral_id is not None else 0.0
     )
-    scored["stance_margin"] = scored["stance_prob_support"] - scored["stance_prob_oppose"]
+    scored["stance_margin"] = (
+        scored["stance_prob_support"] - scored["stance_prob_oppose"]
+    )
 
     predicted = probs_arr.argmax(axis=1)
     stance = []
@@ -173,27 +185,145 @@ def score_stance(
 
 
 def _stance_llm_choice(
-        client: OpenAI,
-        model_name: str,
-        stance_claim: str,
-        passage: str):
-    """Request one stance label, constrained to `_STANCE_LLM_LABELS` via vLLM guided_choice."""
+    client: OpenAI, model_name: str, stance_claim: str, passage: str
+):
+    """Request a stance label with guided choice and first-token logprobs.
+
+    The response content may contain prose when the endpoint ignores
+    ``guided_choice``; ``score_stance_custom`` handles that case using the
+    returned logprob distribution.
+    """
     response = client.chat.completions.create(
         model=model_name,
         messages=[
-            {"role": "system", "content": _STANCE_LLM_SYSTEM_PROMPT},
-            {"role": "user", "content": f"CLAIM: {stance_claim}\nPASSAGE: {passage}\nLABEL:"},
+            {"role": "system", "content": STANCE_LLM_SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": f"CLAIM:\n{stance_claim}\n\nPASSAGE:\n{passage}",
+            },
         ],
-        temperature=0,
-        max_tokens=4,  # headroom in case a label isn't a single token for this model's tokenizer
+        temperature=0.0,
+        max_tokens=4,
         logprobs=True,
         top_logprobs=20,
         extra_body={
-            "guided_choice": list(_STANCE_LLM_LABELS),
-            "chat_template_kwargs": {"enable_thinking": False},
+            "guided_choice": ["A", "B", "C"],
+            "chat_template_kwargs": {
+                "enable_thinking": False,
+            },
+            "thinking": {"type": "disabled"} # DeepSeek API
         },
     )
     return response.choices[0]
+
+
+def get_labels_distribution(top_logprobs) -> dict[str, float]:
+    """Return probabilities over IN FAVOR, AGAINST, and NEUTRAL.
+
+    The returned probabilities are computed by applying a numerically stable
+    softmax to the log probabilities of the allowed output tokens A, B, and C.
+
+    Raises:
+        ValueError: If one or more allowed label tokens are absent from the
+            returned top-logprob candidates.
+    """
+    valid_logprobs: dict[str, float] = {}
+
+    for item in top_logprobs:
+        # Use exact matching first. Stripping is acceptable only when the
+        # endpoint represents labels with surrounding whitespace.
+        token = item.token.strip()
+
+        if token in STANCE_LLM_LABELS:
+            valid_logprobs[token] = item.logprob
+
+    missing_tokens = set(STANCE_LLM_LABELS) - set(valid_logprobs)
+    if missing_tokens:
+        raise ValueError(
+            "Missing stance-label logprobs for tokens "
+            f"{sorted(missing_tokens)}. Increase top_logprobs or ensure the "
+            "endpoint exposes logprobs for every guided-choice label."
+        )
+
+    max_logprob = max(valid_logprobs.values())
+
+    exp_logprobs = {
+        token: np.exp(logprob - max_logprob)
+        for token, logprob in valid_logprobs.items()
+    }
+    normalizer = sum(exp_logprobs.values())
+
+    return {
+        STANCE_LLM_LABELS[token]: exp_logprobs[token] / normalizer
+        for token in STANCE_LLM_LABELS
+    }
+
+
+@dataclass(frozen=True)
+class StanceDecision:
+    """Validated LLM stance response plus evidence used to select its label."""
+
+    raw_response: str
+    emitted_label: str | None
+    first_token: str
+    top_logprobs: list[dict[str, str | float | None]]
+    probabilities: dict[str, float]
+    reported_label: str
+    used_fallback: bool
+    mismatch: bool
+    perplexity: float
+
+    @classmethod
+    def from_choice(cls, choice) -> "StanceDecision":
+        raw_response = (choice.message.content or "").strip()
+        raw_code = raw_response.upper()
+        emitted_label = STANCE_LLM_LABELS.get(raw_code)
+
+        if not choice.logprobs or not choice.logprobs.content:
+            raise ValueError(
+                f"No token logprobs returned for stance response {raw_response!r}; "
+                "cannot validate the response."
+            )
+
+        first_token_data = choice.logprobs.content[0]
+        first_token_logprobs = first_token_data.top_logprobs
+        if not first_token_logprobs:
+            raise ValueError(
+                f"No top_logprobs returned for stance response {raw_response!r}; "
+                "cannot validate the response."
+            )
+
+        response_logprobs = [
+            token.logprob
+            for token in choice.logprobs.content
+            if token.logprob is not None
+        ]
+        if not response_logprobs:
+            raise ValueError(
+                f"No token logprobs returned for stance response {raw_response!r}; "
+                "cannot compute perplexity."
+            )
+
+        probabilities = get_labels_distribution(first_token_logprobs)
+        probability_label = max(probabilities, key=probabilities.get)
+        reported_label = emitted_label or probability_label
+
+        return cls(
+            raw_response=raw_response,
+            emitted_label=emitted_label,
+            first_token=first_token_data.token,
+            top_logprobs=[
+                {"token": item.token, "logprob": item.logprob}
+                for item in first_token_logprobs
+            ],
+            probabilities=probabilities,
+            reported_label=reported_label,
+            used_fallback=emitted_label is None,
+            mismatch=(
+                emitted_label is not None and emitted_label != probability_label
+            ),
+            perplexity=float(np.exp(-np.mean(response_logprobs))),
+        )
 
 
 def score_stance_custom(
@@ -205,13 +335,12 @@ def score_stance_custom(
 ) -> pd.DataFrame:
     """Score passages against a stance claim via a chat LLM endpoint.
 
-    Produces the same output schema as `score_stance`. Requests run
-    concurrently since this is network-bound (unlike the classifier's batched
-    GPU forward pass); each call is constrained to SUPPORT/OPPOSE/NEUTRAL via
-    vLLM guided_choice, and per-label probabilities are recovered from that
-    token's logprobs (`get_probabilities`, shared with `llm_labelling.py`),
-    then renormalized to sum to 1 so the margin is comparable to the
-    classifier's softmax-derived one.
+    Requests are executed concurrently. Exact responses A, B, and C are
+    mapped to IN FAVOR, AGAINST, and NEUTRAL. If the endpoint returns prose or
+    a decorated label instead, the predicted class is
+    selected from the first-token logprob distribution over A, B, and C.
+    Per-class probabilities are obtained by applying a softmax over those
+    first-token log probabilities.
     """
     if df.empty:
         return df.copy()
@@ -221,33 +350,51 @@ def score_stance_custom(
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         choices = list(
             pool.map(
-                lambda passage: _stance_llm_choice(client, model_name, stance_claim, passage),
+                lambda passage: _stance_llm_choice(
+                    client, model_name, stance_claim, passage
+                ),
                 passages,
             )
         )
-    stance = [choice.message.content.strip().upper() for choice in choices]
 
-    raw_probs = [get_probabilities(choice, list(_STANCE_LLM_LABELS)) for choice in choices]
-    probs_arr = np.array(
-        [[probs.get(label, 0.0) for label in _STANCE_LLM_LABELS] for probs in raw_probs]
+    decisions = [StanceDecision.from_choice(choice) for choice in choices]
+    stance = [decision.reported_label for decision in decisions]
+    raw_probs = [decision.probabilities for decision in decisions]
+    perplexities = [decision.perplexity for decision in decisions]
+
+    probs_arr = np.asarray(
+        [
+            [probabilities[label] for label in STANCE_CLASSES]
+            for probabilities in raw_probs
+        ],
+        dtype=np.float64,
     )
-    row_sums = probs_arr.sum(axis=1, keepdims=True)
-    probs_arr = np.divide(probs_arr, row_sums, out=np.zeros_like(probs_arr), where=row_sums > 0)
 
-    label_index = {label: i for i, label in enumerate(_STANCE_LLM_LABELS)}
-    for row, (label, total) in enumerate(zip(stance, row_sums.flatten())):
-        if total == 0:
-            # guided_choice should always surface the chosen label's logprob; this
-            # only triggers if the endpoint omits it from top_logprobs entirely.
-            probs_arr[row, label_index[label]] = 1.0
+    label_index = {label: index for index, label in enumerate(STANCE_CLASSES)}
 
-    scored["stance_prob_support"] = probs_arr[:, label_index["SUPPORT"]]
-    scored["stance_prob_oppose"] = probs_arr[:, label_index["OPPOSE"]]
+    scored["stance_prob_in_favor"] = probs_arr[:, label_index["IN FAVOR"]]
+    scored["stance_prob_against"] = probs_arr[:, label_index["AGAINST"]]
     scored["stance_prob_neutral"] = probs_arr[:, label_index["NEUTRAL"]]
-    scored["stance_margin"] = scored["stance_prob_support"] - scored["stance_prob_oppose"]
+    scored["stance_margin"] = (
+        scored["stance_prob_in_favor"] - scored["stance_prob_against"]
+    )
     scored["stance"] = stance
-    scored["confidence"] = [probs_arr[row, label_index[label]] for row, label in enumerate(stance)]
+    scored["perplexity"] = perplexities
+    scored["confidence"] = [
+        probs_arr[row, label_index[label]] for row, label in enumerate(stance)
+    ]
     scored["hypothesis"] = hypotheses
+    scored["llm_raw_response"] = [decision.raw_response for decision in decisions]
+    scored["llm_emitted_label"] = [decision.emitted_label for decision in decisions]
+    scored["llm_first_token"] = [decision.first_token for decision in decisions]
+    scored["llm_top_logprobs"] = [decision.top_logprobs for decision in decisions]
+    scored["llm_label_probabilities"] = [
+        decision.probabilities for decision in decisions
+    ]
+    scored["llm_used_fallback"] = [
+        decision.used_fallback for decision in decisions
+    ]
+    scored["llm_label_mismatch"] = [decision.mismatch for decision in decisions]
     return scored
 
 
@@ -286,9 +433,17 @@ def save_stance_results(df: pd.DataFrame, path: str | Path) -> Path:
         "retrieval_query",
         "passage",
         "label",
-        "stance_prob_support",
+        "llm_raw_response",
+        "llm_emitted_label",
+        "llm_first_token",
+        "llm_top_logprobs",
+        "llm_label_probabilities",
+        "llm_used_fallback",
+        "llm_label_mismatch",
+        "perplexity",
+        "stance_prob_in_favor",
         "stance_prob_neutral",
-        "stance_prob_oppose",
+        "stance_prob_against",
         "MP",
         "party",
         "topic",

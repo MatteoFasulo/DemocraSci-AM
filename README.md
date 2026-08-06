@@ -81,7 +81,7 @@ uv sync
 alternatively, use pip:
 
 ```bash
-pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly fastapi streamlit
+pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly fastapi
 ```
 
 The Chroma ingestion command consumes `data/speeches_with_text.parquet`. Generate it first by reassembling the original dataset from the 3 parts:
@@ -211,9 +211,9 @@ python main.py \
 `llm keys get <alias>` (or `llm.get_key(explicit_key=<alias>)` in Python) to
 resolve it first, as shown above, e.g.
 
-```bash                                                              
-export API_BASE_URL="https://.../v1" 
-export API_KEY="$(llm keys get sdsc-key)" 
+```bash
+export API_BASE_URL="https://.../v1"
+export API_KEY="$(llm keys get sdsc-key)"
 ```
 
 **Important:** whenever `--stance-api-base-url` is set, `STANCE_DETECTION_MODEL`
@@ -223,6 +223,13 @@ same constant is used for both backends and is not automatically kept in sync.
 Leaving `--stance-api-base-url` unset falls back to the local classifier, which
 requires `STANCE_DETECTION_MODEL` to point at a real sequence-classification
 checkpoint instead.
+
+The custom backend requests one of the labels `A` (in favor), `B` (against), or
+`C` (neutral), using the endpoint's guided-choice support. Some
+OpenAI-compatible servers ignore guided choice and return prose; in that case
+the scorer falls back to the first-token logprob distribution over `A`, `B`,
+and `C`. The endpoint must therefore support `logprobs` and expose all three
+label candidates in `top_logprobs`.
 
 ### Run all policy solutions
 
