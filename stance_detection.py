@@ -20,16 +20,16 @@ pipeline. Probability column names follow the backend's label vocabulary.
 
 from __future__ import annotations
 
-import os
+import asyncio
+
 from dataclasses import dataclass
 from typing import Literal
-from concurrent.futures import ThreadPoolExecutor
+from openai import AsyncOpenAI
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import torch
-from openai import OpenAI
 from pydantic import BaseModel
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -44,11 +44,6 @@ class StanceResponse(BaseModel):
     answer: Literal["A", "B", "C"]
 
 
-def get_openai_client(api_key: str, base_url: str) -> OpenAI:
-    """Create an OpenAI-compatible client for a configured endpoint."""
-    return OpenAI(api_key=api_key, base_url=base_url)
-
-
 def load_stance_classifier(
     model_name: str = STANCE_DETECTION_MODEL,
 ) -> tuple[AutoTokenizer, AutoModelForSequenceClassification, torch.device]:
@@ -59,27 +54,6 @@ def load_stance_classifier(
     model.to(device)
     model.eval()
     return tokenizer, model, device
-
-
-def load_stance_custom_client(
-    api_key: str | None = None,
-    base_url: str | None = None,
-) -> OpenAI:
-    """Create an OpenAI-compatible client for a vLLM-served stance LLM.
-
-    Falls back to the ``OPENAI_API_KEY`` / ``OPENAI_API_BASE_URL`` environment
-    variables used by the project when ``api_key`` / ``base_url`` aren't
-    passed explicitly.
-    """
-    api_key = api_key or os.environ.get("OPENAI_API_KEY")
-    base_url = base_url or os.environ.get("OPENAI_API_BASE_URL")
-    if not api_key or not base_url:
-        raise ValueError(
-            "load_stance_custom_client requires an API key and base URL, via "
-            "arguments or the OPENAI_API_KEY / OPENAI_API_BASE_URL "
-            "environment variables."
-        )
-    return get_openai_client(api_key, base_url)
 
 
 def label_ids(model: AutoModelForSequenceClassification) -> dict[str, int]:
@@ -110,7 +84,7 @@ def _prepare_scored_frame(
     return scored, passages, hypotheses
 
 
-def score_stance(
+async def score_stance(
     df: pd.DataFrame,
     stance_claim: str,
     tokenizer: AutoTokenizer,
@@ -192,11 +166,11 @@ def score_stance(
     return scored
 
 
-def _stance_llm_choice(
-    client: OpenAI, model_name: str, stance_claim: str, passage: str
+async def _stance_llm_choice(
+    client: AsyncOpenAI, model_name: str, stance_claim: str, passage: str
 ):
     """Request a stance label using the validated JSON response schema."""
-    response = client.chat.completions.parse(
+    response = await client.chat.completions.parse(
         model=model_name,
         messages=[
             {"role": "system", "content": STANCE_LLM_SYSTEM_PROMPT},
@@ -205,8 +179,8 @@ def _stance_llm_choice(
         temperature=0.0,
         max_tokens=8,
         logprobs=True,
-        top_logprobs=5,
-        response_format=StanceResponse,
+        top_logprobs=4,
+        response_format=StanceResponse if not "deepseek"in model_name.lower() else {'type': 'json_object'}, # DeepSeek API
         extra_body={
             "chat_template_kwargs": {
                 "enable_thinking": False,
@@ -230,9 +204,8 @@ def get_labels_distribution(top_logprobs) -> dict[str, float]:
     valid_logprobs: dict[str, float] = {}
 
     for item in top_logprobs:
-        # Use exact matching first. Stripping is acceptable only when the
-        # endpoint represents labels with surrounding whitespace.
-        token = item.token.strip()
+        # Match only the exact label token; whitespace-prefixed variants are distinct tokens.
+        token = item.token
 
         if token in STANCE_LLM_LABELS:
             valid_logprobs[token] = item.logprob
@@ -280,28 +253,25 @@ class StanceDecision:
 
         emitted_label = STANCE_LLM_LABELS[parsed_response.answer]
         content = choice.logprobs.content if choice.logprobs else []
-        label_top_logprobs = next(
-            (
-                token_data.top_logprobs
-                for token_data in content
-                if token_data.top_logprobs
-                and set(STANCE_LLM_LABELS).issubset(
-                    {item.token.strip() for item in token_data.top_logprobs}
-                )
-            ),
+        answer_token_data = next(
+            (token_data for token_data in content if token_data.token == parsed_response.answer),
             None,
         )
+        if answer_token_data is None:
+            raise ValueError(
+                f"Could not find exact emitted stance label token {parsed_response.answer!r} "
+                "in the response logprobs."
+            )
 
-        if label_top_logprobs:
-            probabilities = get_labels_distribution(label_top_logprobs)
-            probability_label = max(probabilities, key=probabilities.get)
-            mismatch = emitted_label != probability_label
-        else:
-            probabilities = {
-                label: float("nan")
-                for label in STANCE_CLASSES
-            }
-            mismatch = False
+        label_top_logprobs = answer_token_data.top_logprobs
+        if not label_top_logprobs:
+            raise ValueError(
+                f"Exact emitted stance label token {parsed_response.answer!r} has no top logprobs."
+            )
+
+        probabilities = get_labels_distribution(label_top_logprobs)
+        probability_label = max(probabilities, key=probabilities.get)
+        mismatch = emitted_label != probability_label
 
         response_logprobs = [
             token.logprob
@@ -328,10 +298,10 @@ class StanceDecision:
 
 
 
-def score_stance_custom(
+async def score_stance_custom(
     df: pd.DataFrame,
     stance_claim: str,
-    client: OpenAI,
+    client: AsyncOpenAI,
     model_name: str,
     max_workers: int = 8,
 ) -> pd.DataFrame:
@@ -347,15 +317,13 @@ def score_stance_custom(
 
     scored, passages, hypotheses = _prepare_scored_frame(df, stance_claim)
 
-    with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        choices = list(
-            pool.map(
-                lambda passage: _stance_llm_choice(
-                    client, model_name, stance_claim, passage
-                ),
-                passages,
-            )
-        )
+    semaphore = asyncio.Semaphore(max_workers)
+
+    async def score_passage(passage: str):
+        async with semaphore:
+            return await _stance_llm_choice(client, model_name, stance_claim, passage)
+
+    choices = await asyncio.gather(*(score_passage(passage) for passage in passages))
 
     decisions = [StanceDecision.from_choice(choice) for choice in choices]
     stance = [decision.reported_label for decision in decisions]

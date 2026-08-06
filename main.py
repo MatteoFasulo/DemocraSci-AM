@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -10,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import click
+from openai import AsyncOpenAI
 import pandas as pd
 import requests
 import torch
@@ -26,7 +28,6 @@ from const import (
 )
 from stance_detection import (
     load_stance_classifier,
-    load_stance_custom_client,
     save_stance_results,
     score_stance,
     score_stance_custom,
@@ -197,26 +198,29 @@ def cli(
     save_records(passages, run_dir / "candidate_passages.json")
 
     if stance_api_base_url:
-        stance_client = load_stance_custom_client(api_key=stance_api_key, base_url=stance_api_base_url)
-        stance_results = score_stance_custom(
-            passages,
-            stance_claim=stance_claim,
-            client=stance_client,
-            model_name=STANCE_DETECTION_MODEL,
-        )
+        async def score_with_custom_api() -> pd.DataFrame:
+            async with AsyncOpenAI(api_key=stance_api_key, base_url=stance_api_base_url) as stance_client:
+                return await score_stance_custom(
+                    passages,
+                    stance_claim=stance_claim,
+                    client=stance_client,
+                    model_name=STANCE_DETECTION_MODEL,
+                )
+
+        stance_results = asyncio.run(score_with_custom_api())
     else:
         if passages.empty:
            stance_results = passages.copy()
         else:
            tokenizer, stance_model_object, stance_device = load_stance_classifier()
-           stance_results = score_stance(
+           stance_results = asyncio.run(score_stance(
                passages,
                stance_claim=stance_claim,
                tokenizer=tokenizer,
                model=stance_model_object,
                device=stance_device,
                batch_size=batch_size,
-           )
+           ))
     save_stance_results(stance_results, run_dir / "stance_predictions.json")
 
     config = {

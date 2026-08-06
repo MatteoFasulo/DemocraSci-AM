@@ -7,8 +7,8 @@ RERANK_THRESHOLD = 0.40
 
 # STANCE DETECTION
 # STANCE_DETECTION_MODEL = "MatteoFasulo/mdeberta-v3-xstance"
-# STANCE_DETECTION_MODEL = "deepseek-v4-flash"
-STANCE_DETECTION_MODEL = "Qwen/Qwen3.6-35B-A3B-FP8"
+STANCE_DETECTION_MODEL = "deepseek-v4-flash"
+#STANCE_DETECTION_MODEL = "Qwen/Qwen3.6-35B-A3B-FP8"
 STANCE_LLM_LABELS = {"A": "IN FAVOR", "B": "AGAINST", "C": "NEUTRAL"}
 STANCE_LLM_SYSTEM_PROMPT = """You are an annotator for political science.
 
