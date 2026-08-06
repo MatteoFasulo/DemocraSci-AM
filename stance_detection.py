@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from typing import Literal
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -29,11 +30,18 @@ import numpy as np
 import pandas as pd
 import torch
 from openai import OpenAI
+from pydantic import BaseModel
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from const import STANCE_DETECTION_MODEL, STANCE_LLM_LABELS, STANCE_LLM_SYSTEM_PROMPT
 
 STANCE_CLASSES = tuple(STANCE_LLM_LABELS.values())
+
+
+class StanceResponse(BaseModel):
+    """Structured response returned by the stance-classification LLM."""
+
+    answer: Literal["A", "B", "C"]
 
 
 def get_openai_client(api_key: str, base_url: str) -> OpenAI:
@@ -187,31 +195,23 @@ def score_stance(
 def _stance_llm_choice(
     client: OpenAI, model_name: str, stance_claim: str, passage: str
 ):
-    """Request a stance label with guided choice and first-token logprobs.
-
-    The response content may contain prose when the endpoint ignores
-    ``guided_choice``; ``score_stance_custom`` handles that case using the
-    returned logprob distribution.
-    """
-    response = client.chat.completions.create(
+    """Request a stance label using the validated JSON response schema."""
+    response = client.chat.completions.parse(
         model=model_name,
         messages=[
             {"role": "system", "content": STANCE_LLM_SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": f"CLAIM:\n{stance_claim}\n\nPASSAGE:\n{passage}",
-            },
+            {"role": "user", "content": f"CLAIM:\n{stance_claim}\n\nPASSAGE:\n{passage}"},
         ],
         temperature=0.0,
-        max_tokens=4,
+        max_tokens=8,
         logprobs=True,
-        top_logprobs=20,
+        top_logprobs=10,
+        response_format=StanceResponse,
         extra_body={
-            "guided_choice": ["A", "B", "C"],
             "chat_template_kwargs": {
                 "enable_thinking": False,
             },
-            "thinking": {"type": "disabled"} # DeepSeek API
+            "thinking": {"type": "disabled"}, # DeepSeek API
         },
     )
     return response.choices[0]
@@ -276,8 +276,10 @@ class StanceDecision:
     @classmethod
     def from_choice(cls, choice) -> "StanceDecision":
         raw_response = (choice.message.content or "").strip()
-        raw_code = raw_response.upper()
-        emitted_label = STANCE_LLM_LABELS.get(raw_code)
+        parsed_response = getattr(choice.message, "parsed", None)
+        if parsed_response is None:
+            parsed_response = StanceResponse.model_validate_json(raw_response)
+        emitted_label = STANCE_LLM_LABELS[parsed_response.answer]
 
         if not choice.logprobs or not choice.logprobs.content:
             raise ValueError(
@@ -286,11 +288,21 @@ class StanceDecision:
             )
 
         first_token_data = choice.logprobs.content[0]
-        first_token_logprobs = first_token_data.top_logprobs
-        if not first_token_logprobs:
+        label_top_logprobs = next(
+            (
+                token_data.top_logprobs
+                for token_data in choice.logprobs.content
+                if token_data.top_logprobs
+                and set(STANCE_LLM_LABELS).issubset(
+                    {item.token.strip() for item in token_data.top_logprobs}
+                )
+            ),
+            None,
+        )
+        if not label_top_logprobs:
             raise ValueError(
-                f"No top_logprobs returned for stance response {raw_response!r}; "
-                "cannot validate the response."
+                f"No top_logprobs containing all stance labels returned for "
+                f"response {raw_response!r}; cannot validate the response."
             )
 
         response_logprobs = [
@@ -304,7 +316,7 @@ class StanceDecision:
                 "cannot compute perplexity."
             )
 
-        probabilities = get_labels_distribution(first_token_logprobs)
+        probabilities = get_labels_distribution(label_top_logprobs)
         probability_label = max(probabilities, key=probabilities.get)
         reported_label = emitted_label or probability_label
 
@@ -314,7 +326,7 @@ class StanceDecision:
             first_token=first_token_data.token,
             top_logprobs=[
                 {"token": item.token, "logprob": item.logprob}
-                for item in first_token_logprobs
+                for item in label_top_logprobs
             ],
             probabilities=probabilities,
             reported_label=reported_label,

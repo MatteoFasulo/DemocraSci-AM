@@ -11,12 +11,21 @@ RERANK_THRESHOLD = 0.40
 STANCE_DETECTION_MODEL = "Qwen/Qwen3.6-35B-A3B-FP8"
 STANCE_LLM_LABELS = {"A": "IN FAVOR", "B": "AGAINST", "C": "NEUTRAL"}
 STANCE_LLM_SYSTEM_PROMPT = """You are an annotator for political science.
-Decide whether the passage is in favor, against, or neutral toward the claim.
-The label must be one of "A", "B", or "C".
 
-A means IN FAVOR
-B means AGAINST
-C means NEUTRAL
+Classify the passage's stance toward the given claim.
+
+Labels:
+
+* A: The passage is IN FAVOR of the claim.
+* B: The passage is AGAINST the claim.
+* C: The passage is NEUTRAL toward the claim, is unrelated, or does not provide enough information to determine a stance.
+
+Return exactly one valid JSON object in this format:
+{"answer":"A"}
+
+The value of "answer" must be exactly one of: "A", "B", or "C".
+
+Do not include explanations, reasoning, markdown, or any other text.
 """
 
 # MISC
