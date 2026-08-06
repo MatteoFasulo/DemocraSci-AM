@@ -205,7 +205,7 @@ def _stance_llm_choice(
         temperature=0.0,
         max_tokens=8,
         logprobs=True,
-        top_logprobs=10,
+        top_logprobs=5,
         response_format=StanceResponse,
         extra_body={
             "chat_template_kwargs": {
@@ -261,15 +261,13 @@ def get_labels_distribution(top_logprobs) -> dict[str, float]:
 
 @dataclass(frozen=True)
 class StanceDecision:
-    """Validated LLM stance response plus evidence used to select its label."""
+    """Validated structured LLM response plus optional probability diagnostics."""
 
     raw_response: str
     emitted_label: str | None
-    first_token: str
     top_logprobs: list[dict[str, str | float | None]]
     probabilities: dict[str, float]
     reported_label: str
-    used_fallback: bool
     mismatch: bool
     perplexity: float
 
@@ -279,19 +277,13 @@ class StanceDecision:
         parsed_response = getattr(choice.message, "parsed", None)
         if parsed_response is None:
             parsed_response = StanceResponse.model_validate_json(raw_response)
+
         emitted_label = STANCE_LLM_LABELS[parsed_response.answer]
-
-        if not choice.logprobs or not choice.logprobs.content:
-            raise ValueError(
-                f"No token logprobs returned for stance response {raw_response!r}; "
-                "cannot validate the response."
-            )
-
-        first_token_data = choice.logprobs.content[0]
+        content = choice.logprobs.content if choice.logprobs else []
         label_top_logprobs = next(
             (
                 token_data.top_logprobs
-                for token_data in choice.logprobs.content
+                for token_data in content
                 if token_data.top_logprobs
                 and set(STANCE_LLM_LABELS).issubset(
                     {item.token.strip() for item in token_data.top_logprobs}
@@ -299,43 +291,41 @@ class StanceDecision:
             ),
             None,
         )
-        if not label_top_logprobs:
-            raise ValueError(
-                f"No top_logprobs containing all stance labels returned for "
-                f"response {raw_response!r}; cannot validate the response."
-            )
+
+        if label_top_logprobs:
+            probabilities = get_labels_distribution(label_top_logprobs)
+            probability_label = max(probabilities, key=probabilities.get)
+            mismatch = emitted_label != probability_label
+        else:
+            probabilities = {
+                label: float("nan")
+                for label in STANCE_CLASSES
+            }
+            mismatch = False
 
         response_logprobs = [
             token.logprob
-            for token in choice.logprobs.content
+            for token in content
             if token.logprob is not None
         ]
-        if not response_logprobs:
-            raise ValueError(
-                f"No token logprobs returned for stance response {raw_response!r}; "
-                "cannot compute perplexity."
-            )
-
-        probabilities = get_labels_distribution(label_top_logprobs)
-        probability_label = max(probabilities, key=probabilities.get)
-        reported_label = emitted_label or probability_label
 
         return cls(
             raw_response=raw_response,
             emitted_label=emitted_label,
-            first_token=first_token_data.token,
             top_logprobs=[
                 {"token": item.token, "logprob": item.logprob}
-                for item in label_top_logprobs
+                for item in (label_top_logprobs or [])
             ],
             probabilities=probabilities,
-            reported_label=reported_label,
-            used_fallback=emitted_label is None,
-            mismatch=(
-                emitted_label is not None and emitted_label != probability_label
+            reported_label=emitted_label,
+            mismatch=mismatch,
+            perplexity=(
+                float(np.exp(-np.mean(response_logprobs)))
+                if response_logprobs
+                else float("nan")
             ),
-            perplexity=float(np.exp(-np.mean(response_logprobs))),
         )
+
 
 
 def score_stance_custom(
@@ -347,12 +337,10 @@ def score_stance_custom(
 ) -> pd.DataFrame:
     """Score passages against a stance claim via a chat LLM endpoint.
 
-    Requests are executed concurrently. Exact responses A, B, and C are
-    mapped to IN FAVOR, AGAINST, and NEUTRAL. If the endpoint returns prose or
-    a decorated label instead, the predicted class is
-    selected from the first-token logprob distribution over A, B, and C.
-    Per-class probabilities are obtained by applying a softmax over those
-    first-token log probabilities.
+    Requests are executed concurrently. The validated ``StanceResponse``
+    answer is authoritative. Label probabilities and perplexity are retained
+    when the endpoint returns usable logprobs, but are never used to replace
+    the structured answer.
     """
     if df.empty:
         return df.copy()
@@ -398,13 +386,9 @@ def score_stance_custom(
     scored["hypothesis"] = hypotheses
     scored["llm_raw_response"] = [decision.raw_response for decision in decisions]
     scored["llm_emitted_label"] = [decision.emitted_label for decision in decisions]
-    scored["llm_first_token"] = [decision.first_token for decision in decisions]
     scored["llm_top_logprobs"] = [decision.top_logprobs for decision in decisions]
     scored["llm_label_probabilities"] = [
         decision.probabilities for decision in decisions
-    ]
-    scored["llm_used_fallback"] = [
-        decision.used_fallback for decision in decisions
     ]
     scored["llm_label_mismatch"] = [decision.mismatch for decision in decisions]
     return scored
@@ -447,10 +431,8 @@ def save_stance_results(df: pd.DataFrame, path: str | Path) -> Path:
         "label",
         "llm_raw_response",
         "llm_emitted_label",
-        "llm_first_token",
         "llm_top_logprobs",
         "llm_label_probabilities",
-        "llm_used_fallback",
         "llm_label_mismatch",
         "perplexity",
         "stance_prob_in_favor",
