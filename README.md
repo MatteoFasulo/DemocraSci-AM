@@ -242,7 +242,58 @@ python runner.py
 The runner calls main.py sequentially and writes one artifact directory per
 policy solution under outputs/.
 
-## Docker (broken)
+## Docker 
+
+### Minimal RunAI Image
+
+A minimal image is available on Docker Hub at `hub.docker.com/repository/docker/samarinm/democrasci-am:minimal`, based on
+`Dockerfile_minimal`. It contains only system packages and a uv-managed Python venv with dependencies from `pyproject.toml`. 
+<details>
+
+<summary>RunAI CLI instructions with custom image</summary>
+
+Run the following command to submit a job:
+
+```bash
+runai workspace submit <JOB_NAME> \
+-i samarinm/democrasci-am:minimal \
+--gpu-request-type portion \
+--gpu-portion-request 0.20 \
+--gpu-devices-request 1 \
+--preemptibility preemptible 
+```
+
+Note that the `--preemptibility preemptible` flag is only necessary when you exceed your GPU quota of 0.2.
+
+Connect to the workspace with
+```bash
+kubectl -it exec "pod/<JOB_NAME>-0-0" -n "runai-politperformance-<YOUR_USER>" -- /bin/bash
+```
+or, alternatively,
+```bash
+ssh root@localhost -p 2222
+```
+
+In order to allow port forwarding, you need to add the following (once) to your `~/.bashrc` file, which you
+can conveniently do with the following commands (after connecting to the workspace):
+
+```bash
+echo 'source /quickstart/scripts/helperfunctions.sh' >> /myhome/.bashrc
+echo 'ssh_enable_ubuntu   # in case you need ssh login e.g. for forwarding ssh-keys, using file explorer, etc. or need the scp command.' >> /myhome/.bashrc
+```
+
+Whenever you source `~/.bashrc` or start a new terminal, the `ssh_enable_ubuntu` command will enable SSH login.
+
+Now, to expose the SSH port from your local terminal, run:
+
+```bash
+kubectl port-forward "pod/<JOB_NAME>-0-0" 2222:22 -n "runai-politperformance-<YOUR_USER>"
+```
+
+</details>
+
+
+### Advanced RunAI Image (currently broken)
 
 **NOTE:** The Dockerfile is currently broken due to an issue with SSH interactive sessions.
 
