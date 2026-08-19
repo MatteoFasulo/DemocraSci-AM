@@ -1,0 +1,1892 @@
+[
+  {
+    "speech_id":248779,
+    "paragraph_id":2,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Au vu de la \"bilatéralisation\" de la politique commerciale aux Etats-Unis, de la forte orientation à l'exportation de la Suisse - la Suisse fait partie des pays où le commerce exterior contribue le plus au produit intérieur brut -, ainsi que de l'importance majeure du marché américain pour la Suisse, la question d'un accord de libre-échange se pose à nouveau.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0646041706
+      },
+      {
+        "token":"A",
+        "logprob":-2.8146042824
+      },
+      {
+        "token":"B",
+        "logprob":-5.9396042824
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0599284314,
+      "AGAINST":0.0026330715,
+      "NEUTRAL":0.9374384971
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0182623647,
+    "stance_prob_in_favor":0.0599284314,
+    "stance_prob_neutral":0.9374384971,
+    "stance_prob_against":0.0026330715,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.99609375
+  },
+  {
+    "speech_id":248754,
+    "paragraph_id":3,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Damit dieses Vorhaben - nach einem ersten und erst noch selbst zu verantwortenden Scheitern - im zweiten Anlauf gelingen kann, ist ein partizipativer Ansatz zu wählen. Die massgebenden parlamentarischen Kommissionen sollen zudem laufend konsultiert und informiert werden. Ziel eines Freihandelsabkommens mit den USA ist aus nationaler Sicht vor allem, die schweizerische Exportindustrie zu stärken und den Zugang zum US-Markt zu sichern. Gleichzeitig ist anzumerken, dass ein Freihandelsabkommen durchaus auch im Interesse der USA liegt, ist die Schweiz doch dort die siebtgrösste Investorin, deren Unternehmen in den USA rund eine halbe Million gutbezahlte Arbeitsplätze geschaffen haben und viel in Forschung, Entwicklung und Innovation investieren.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0000874958
+      },
+      {
+        "token":"C",
+        "logprob":-9.625087738
+      },
+      {
+        "token":"B",
+        "logprob":-10.750087738
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9999125058,
+      "AGAINST":0.0000214435,
+      "NEUTRAL":0.0000660507
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0144367795,
+    "stance_prob_in_favor":0.9999125058,
+    "stance_prob_neutral":0.0000660507,
+    "stance_prob_against":0.0000214435,
+    "MP":"Christa Markwalder",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.98828125
+  },
+  {
+    "speech_id":248779,
+    "paragraph_id":5,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Pour la Suisse, un accord de libre-échange avec les Etats-Unis offrirait de nouvelles opportunités pour l'économie, cela garantirait de la sécurité juridique, et cela créerait surtout un cadre institutionnalisé pour renforcer les relations économiques bilatérales. Naturellement, cela implique certains défis, en particulier pour le secteur agricole, dans lequel les Etats-Unis poursuivent des intérêts offensifs. Il convient donc de clarifier dans quelle mesure nous pourrions avoir une certaine flexibilité, où nous pourrions avoir des solutions pour des produits sensibles, quel degré de libéralisation acceptable nous pourrions trouver pour les deux pays. Il faut noter aussi - et cela a été relevé par le rapporteur - que les spécialités de fromage sont de plus en plus prisées aux Etats-Unis, et la Suisse a donc aussi, en matière agricole, certains intérêts offensifs à faire valoir.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0033356287
+      },
+      {
+        "token":"C",
+        "logprob":-5.7533354759
+      },
+      {
+        "token":"B",
+        "logprob":-8.7533359528
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9966698842,
+      "AGAINST":0.0001579336,
+      "NEUTRAL":0.0031721823
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0210919989,
+    "stance_prob_in_favor":0.9966698842,
+    "stance_prob_neutral":0.0031721823,
+    "stance_prob_against":0.0001579336,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.984375
+  },
+  {
+    "speech_id":248754,
+    "paragraph_id":4,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Die Schweizer Regierung hat im Januar 2006 die Verhandlungen mit den USA zu einem Freihandelsabkommen respektive die exploratorischen Gespräche, die dazu führen sollten, abgebrochen. In der Zwischenzeit haben die USA auf verschiedenen Kanälen signalisiert, dass sie für eine Wiederaufnahme von Verhandlungen bereit wären. Die Schweiz tut gut daran, diese Gelegenheit zu packen. Es bietet sich ein \"window of opportunity\", dessen Zeitrahmen allerdings begrenzt ist und nicht verschlafen werden darf.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.000013709
+      },
+      {
+        "token":"B",
+        "logprob":-11.3750133514
+      },
+      {
+        "token":"C",
+        "logprob":-13.0000133514
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.999986261,
+      "AGAINST":0.0000114787,
+      "NEUTRAL":0.0000022603
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0510496668,
+    "stance_prob_in_favor":0.999986261,
+    "stance_prob_neutral":0.0000022603,
+    "stance_prob_against":0.0000114787,
+    "MP":"Christa Markwalder",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.984375
+  },
+  {
+    "speech_id":248797,
+    "paragraph_id":2,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Drei Hauptgründe haben mich bewogen, die Motion zur Ablehnung zu empfehlen. Erstens ist die Motion unnötig, denn Gespräche mit den USA bezüglich Freihandelsabkommen haben bereits stattgefunden bzw. finden immer noch statt. Immerhin hat unser Bundespräsident mit dem Präsidenten der USA das Thema auf höchster Stufe aufgenommen. Zweitens müsste die Schweiz als Efta-Mitglied zumindest umfassend prüfen, ob ein gemeinsames Vorgehen nicht sinnvoller wäre. Schliesslich enthält die Motion drittens praktisch keine Bedingungen inhaltlicher Natur, zumindest nicht in politisch heiklen Punkten. Damit ist der Widerstand verschiedener Stakeholder vorprogrammiert.",
+    "label":"AGAINST",
+    "llm_raw_response":"{\"answer\": \"B\"}",
+    "llm_emitted_label":"AGAINST",
+    "llm_top_logprobs":[
+      {
+        "token":"B",
+        "logprob":-0.0469061993
+      },
+      {
+        "token":"C",
+        "logprob":-3.1719062328
+      },
+      {
+        "token":"A",
+        "logprob":-5.5469059944
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0038995037,
+      "AGAINST":0.954176891,
+      "NEUTRAL":0.0419236053
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0156809812,
+    "stance_prob_in_favor":0.0038995037,
+    "stance_prob_neutral":0.0419236053,
+    "stance_prob_against":0.954176891,
+    "MP":"Sibel Arslan",
+    "party":"Grüne",
+    "topic":"International Affairs",
+    "rerank_score":0.98046875
+  },
+  {
+    "speech_id":238787,
+    "paragraph_id":2,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Sie kennen meine Interessenbindung als Präsident von Chocosuisse. Ich möchte daher kurz beispielhaft skizzieren, welche Wichtigkeit ein solches Freihandelsabkommen für die schweizerische Nahrungsmittelbranche haben könnte. Der Zoll auf Schokolade ist in den USA zurzeit nicht sehr hoch angesetzt. Obwohl die USA die fünftwichtigste Exportnation für Schweizer Schokolade sind, muss der Marktanteil heute als eher marginal bezeichnet werden. Es besteht also ein beträchtliches Entwicklungspotenzial. Die heutige Marktsituation zeigt ja klar, dass diese Industrie primär auf den Export fokussieren muss, wenn trotz Rückgang im Inland das Wachstum weiter gesteigert werden soll. Ganz grundsätzlich ist daher die Demarche in Richtung eines Abschlusses eines Freihandelsabkommens mit den USA sehr wohl zu begrüssen.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0000021458
+      },
+      {
+        "token":"B",
+        "logprob":-13.2500019073
+      },
+      {
+        "token":"C",
+        "logprob":-14.8750019073
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.999997893,
+      "AGAINST":0.0000017603,
+      "NEUTRAL":0.0000003466
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0776018648,
+    "stance_prob_in_favor":0.999997893,
+    "stance_prob_neutral":0.0000003466,
+    "stance_prob_against":0.0000017603,
+    "MP":"Beat Vonlanthen",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.9765625
+  },
+  {
+    "speech_id":248941,
+    "paragraph_id":6,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Conclure un accord de libre-échange avec les Etats-Unis doit bien sûr se faire de façon équilibrée. La première mission de nos négociateurs est de vérifier que les Etats-Unis et la Suisse ont des objectifs de négociation convergents, et c'est ce qu'ils ont commencé à faire depuis l'automne dernier avec une phase dite exploratoire qui se poursuit. Dans cette négociation, les deux partenaires ont un intérêt réciproque à aller de l'avant, et la Suisse a de solides atouts à faire valoir. Notre pays est le sixième investisseur aux Etats-Unis, avec 309 milliards de dollars. Nos entreprises y emploient un demi-million de personnes à des postes qualifiés et bien payés; elles ont également lancé des programmes d'apprentissage \"à la Suisse\", lesquels sont une nouveauté très appréciée aux Etats-Unis. Réciproquement, les Etats-Unis sont le premier investisseur étranger en Suisse, avec 457 milliards de francs.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0029135181
+      },
+      {
+        "token":"C",
+        "logprob":-5.877913475
+      },
+      {
+        "token":"B",
+        "logprob":-9.127913475
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9970907851,
+      "AGAINST":0.0001085919,
+      "NEUTRAL":0.0028006229
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0235902605,
+    "stance_prob_in_favor":0.9970907851,
+    "stance_prob_neutral":0.0028006229,
+    "stance_prob_against":0.0001085919,
+    "MP":"Claude Béglé",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.96875
+  },
+  {
+    "speech_id":281902,
+    "paragraph_id":1,
+    "Affair_ID":"20193596",
+    "bill_number":19.3596,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Les discussions avec les Etats-Unis en vue d'un possible accord de libre-échange sont toujours dans une phase exploratoire. Elles servent à évaluer quelles seraient les attentes et les possibilités de part et d'autre. Les produits agricoles constituent l'un des principaux intérêts à l'exportation des Etats-Unis et, dans le cadre d'une négociation, il ne serait absolument pas réaliste de les exclure. Une exclusion des produits agricoles poserait par ailleurs un problème de conformité aux exigences de l'OMC. Il conviendrait de clarifier dans quelle mesure des solutions pour des produits sensibles pourraient être envisageables, afin que le degré de libéralisation soit acceptable pour nos deux pays et que la politique agricole suisse soit respectée.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0026707714
+      },
+      {
+        "token":"A",
+        "logprob":-6.5026707649
+      },
+      {
+        "token":"B",
+        "logprob":-6.7526707649
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0014994293,
+      "AGAINST":0.0011677567,
+      "NEUTRAL":0.9973328141
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0065580881,
+    "stance_prob_in_favor":0.0014994293,
+    "stance_prob_neutral":0.9973328141,
+    "stance_prob_against":0.0011677567,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.96875
+  },
+  {
+    "speech_id":276782,
+    "paragraph_id":3,
+    "Affair_ID":"20203127",
+    "bill_number":20.3127,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Die Motion geht nun aber einen Schritt weiter und fordert, dass die Schweiz ein Freihandelsabkommen der zweiten Generation mit dem Vereinigten Königreich aushandelt, ob dies alleine oder im Rahmen der EFTA geschieht, steht dabei offen. Die Motion will also eine eigentliche Brücke bauen und so die beiden Länder näher zueinander bringen.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0038297656
+      },
+      {
+        "token":"B",
+        "logprob":-5.6288299561
+      },
+      {
+        "token":"A",
+        "logprob":-8.3788299561
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0002296785,
+      "AGAINST":0.0035927765,
+      "NEUTRAL":0.996177545
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0019467553,
+    "stance_prob_in_favor":0.0002296785,
+    "stance_prob_neutral":0.996177545,
+    "stance_prob_against":0.0035927765,
+    "MP":"Damian Müller",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.953125
+  },
+  {
+    "speech_id":238776,
+    "paragraph_id":2,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Ich habe diese Motion vor allem aus folgenden Gründen eingereicht: Die USA und insbesondere deren Botschafter in der Schweiz haben signalisiert, dass die US-Administration an einem Freihandelsabkommen mit der Schweiz interessiert sein könnte. Das wurde auch auf anderen Kanälen zusätzlich bestätigt. Der US-Markt ist für die Schweiz sehr wichtig: Der Exportanteil stieg in den letzten zehn Jahren von 9,7 auf 15,3 Prozent. Wenn man das Wachstum betrachtet, dann stellt man fest, dass man in den letzten fünf Jahren die Exporte in die USA um 50 Prozent steigern konnte, jene in die EU hingegen nur um 5 Prozent. Es gibt hier also auch eine Verschiebung der Marktanteile, und ich denke, dass das - auch in Hinsicht auf Abhängigkeiten - sehr gut für unser Land ist. Das Potenzial ist gross: Es gibt gegenüber den USA viele tarifäre und technische Handelshemmnisse, und diese sollte man reduzieren oder abbauen. Gerade vor dem Hintergrund der schwierigen Verhandlungen mit der EU ist es auch vorteilhaft, mit einem anderen wichtigen Markt im Gespräch zu sein und die Handelsbeziehungen auszubauen.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\":\"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0000065565
+      },
+      {
+        "token":"B",
+        "logprob":-12.5000066757
+      },
+      {
+        "token":"C",
+        "logprob":-12.7500066757
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9999933711,
+      "AGAINST":0.0000037266,
+      "NEUTRAL":0.0000029023
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0342054118,
+    "stance_prob_in_favor":0.9999933711,
+    "stance_prob_neutral":0.0000029023,
+    "stance_prob_against":0.0000037266,
+    "MP":"Konrad Graber",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.94140625
+  },
+  {
+    "speech_id":248941,
+    "paragraph_id":2,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Notre économie a besoin d'un accord commercial avec les Etats-Unis, car les Etats-Unis sont devenus notre deuxième marché d'exportation derrière l'Allemagne. A l'heure où l'avenir des relations bilatérales entre la Suisse et l'Union européenne manque de clarté, il est impératif de diversifier nos débouchés. Or il se trouve que nos exportations vers les Etats-Unis ont doublé en valeur en l'espace de dix ans - c'est  un marché très dynamique. Dès lors, nos entreprises ont besoin d'un cadre commercial qui leur octroie de bonnes conditions en termes de taxes, de normes techniques, de sécurité juridique, et que ce cadre soit garanti dans la durée. Cela permettrait de réduire de 300 millions de francs les taxes douanières qui s'ajoutent au prix des exportations suisses.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.000002265
+      },
+      {
+        "token":"B",
+        "logprob":-13.1250019073
+      },
+      {
+        "token":"C",
+        "logprob":-15.2500019073
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.999997767,
+      "AGAINST":0.0000019947,
+      "NEUTRAL":0.0000002382
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0510439661,
+    "stance_prob_in_favor":0.999997767,
+    "stance_prob_neutral":0.0000002382,
+    "stance_prob_against":0.0000019947,
+    "MP":"Claude Béglé",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.94140625
+  },
+  {
+    "speech_id":238776,
+    "paragraph_id":3,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Auch die USA könnten vor dem Hintergrund von Handelskonflikten und Spannungen mit der EU daran interessiert sein, den Beweis anzutreten, dass man durchaus an bilateralen Beziehungen mit einem wichtigen Partner - und die Schweiz ist hier ein wichtiger Partner - im Herzen von Europa interessiert ist. Auch zwischen den USA und der EU laufen offensichtlich Gespräche; mindestens seit dem 26. Juli, als sich Donald Trump und Jean-Claude Juncker trafen, hat man den Eindruck, dass sich hier etwas anbahnt - was dann natürlich, wenn diese Verhandlungen schneller und erfolgreicher wären, auch für die Schweiz zusätzliche Probleme schaffen würde. Freihandelsabkommen müssen immer in guten Zeiten abgeschlossen werden und nicht aus einer dringenden wirtschaftlichen Situation heraus. Ich glaube, diese Politik hat Herr Bundesrat Schneider-Ammann in den letzten Jahren sehr stark verfolgt, und ich denke, es ist wichtig, dass wir nun hier auch mit den USA einen Versuch starten.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0001838038
+      },
+      {
+        "token":"C",
+        "logprob":-9.1251840591
+      },
+      {
+        "token":"B",
+        "logprob":-9.5001840591
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9998162732,
+      "AGAINST":0.0000748381,
+      "NEUTRAL":0.0001088887
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0458100837,
+    "stance_prob_in_favor":0.9998162732,
+    "stance_prob_neutral":0.0001088887,
+    "stance_prob_against":0.0000748381,
+    "MP":"Konrad Graber",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.94140625
+  },
+  {
+    "speech_id":248754,
+    "paragraph_id":6,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Warum also brauchen wir denn noch ein Freihandelsabkommen, wenn die Handelsbeziehungen so boomen? Weil nach wie vor Zölle erhoben werden, z. B. auf Maschinen und organischen Chemikalien, aber auch auf Automobil- und Parfumprodukten. Beide Länder schützen ihre landwirtschaftlichen Produkte stark, weshalb für das Gelingen eines Freihandelsabkommens kreative Ansätze im Bereich Landwirtschaft gefragt sind, wie wir sie schon bei anderen Freihandelsverhandlungen erfolgreich angewendet haben. Ökonomische Studien zeigen zudem auf, dass Freihandelsabkommen im Schnitt zu um 2,2 Prozent höheren Handelsvolumen führen, was dem wirtschaftlichen Austausch Schweiz-USA einen zusätzlichen Schub verleihen würde. Wenn wir vorwärtsmachen, könnten wir analog zum Abkommen mit China noch vor der EU einen Abschluss erreichen. Andernfalls ist zu erwarten, dass zu einem späteren Zeitpunkt nur noch ein Nachvollzug möglich wäre.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0000058412
+      },
+      {
+        "token":"B",
+        "logprob":-12.125005722
+      },
+      {
+        "token":"C",
+        "logprob":-14.625005722
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9999941327,
+      "AGAINST":0.0000054222,
+      "NEUTRAL":0.0000004451
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0510445165,
+    "stance_prob_in_favor":0.9999941327,
+    "stance_prob_neutral":0.0000004451,
+    "stance_prob_against":0.0000054222,
+    "MP":"Christa Markwalder",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.9375
+  },
+  {
+    "speech_id":238787,
+    "paragraph_id":1,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Ich begrüsse diese weitsichtige Motion von Kollege Graber sehr und danke ihm für den gutaustarierten Vorstoss. Im gleichen Atemzug danke ich auch Herrn Bundesrat Schneider-Ammann für seine Bemühungen, kurz vor seinem Rücktritt erste abtastende Gespräche mit den USA zu führen. Wenn ich es richtig verstanden habe, ist seitens der USA ein gewisses Interesse an einem Freihandelsabkommen mit der Schweiz durchaus vorhanden, auch wenn man noch nicht von einem sehr prononcierten Enthusiasmus sprechen kann - Herr Bundesrat Schneider-Ammann wird ja dann sicher noch darauf eingehen können.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.000013709
+      },
+      {
+        "token":"B",
+        "logprob":-11.6250133514
+      },
+      {
+        "token":"C",
+        "logprob":-12.2500133514
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9999862753,
+      "AGAINST":0.0000089397,
+      "NEUTRAL":0.0000047851
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0410001192,
+    "stance_prob_in_favor":0.9999862753,
+    "stance_prob_neutral":0.0000047851,
+    "stance_prob_against":0.0000089397,
+    "MP":"Beat Vonlanthen",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.91796875
+  },
+  {
+    "speech_id":294457,
+    "paragraph_id":5,
+    "Affair_ID":"20213595",
+    "bill_number":21.3595,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Si de nouvelles négociations venaient à être entamées en vue de moderniser cet accord tel qu'il existe aujourd'hui, alors la Suisse s'engagerait pour obtenir de telles améliorations tout en tenant compte de ses intérêts offensifs et défensifs[NB]en[NB]fonction des différents secteurs. Toutefois - il faut être clair -, au vu des intérêts divergents des deux partenaires et du contexte d'une modernisation de l'accord de libre-échange, il ne serait ni possible ni judicieux d'instaurer une réciprocité totale dans tous les secteurs.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0226872824
+      },
+      {
+        "token":"B",
+        "logprob":-4.0226874352
+      },
+      {
+        "token":"A",
+        "logprob":-5.3976874352
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0045270381,
+      "AGAINST":0.017904783,
+      "NEUTRAL":0.9775681789
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0111533821,
+    "stance_prob_in_favor":0.0045270381,
+    "stance_prob_neutral":0.9775681789,
+    "stance_prob_against":0.017904783,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.91796875
+  },
+  {
+    "speech_id":135950,
+    "paragraph_id":1,
+    "Affair_ID":"20123014",
+    "bill_number":12.3014,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Erlauben Sie mir die Vorbemerkung, dass für mich die Europäische Union kein rotes Tuch ist. Wenn ich mich aber gegen ein Freihandelsabkommen Schweiz-EU im Agrarbereich - im Agrarbereich! - einsetze, dann aus zwei Gründen: Erstens liegt mir als Vertreter des grössten Landwirtschaftskantons der Schweiz und Bewohner des Berner Oberlandes die Landwirtschaft und vor allem auch die Berglandwirtschaft am Herzen. Zweitens höre ich schon lange aufmerksam zu und habe viele Berichte aufmerksam studiert, muss aber einfach sagen, dass ich bis jetzt keine wirklich überzeugenden Argumente gehört habe, weshalb wir ein Freihandelsabkommen Schweiz-EU im Agrarbereich brauchen. Ich bin zwar Berner und bin etwas langsamer als die meisten, (Heiterkeit) doch Begriffsstutzigkeit hat man mir bisher nicht vorgeworfen.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0048803021
+      },
+      {
+        "token":"B",
+        "logprob":-5.3798804283
+      },
+      {
+        "token":"A",
+        "logprob":-8.2548799515
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0002599867,
+      "AGAINST":0.0046083732,
+      "NEUTRAL":0.9951316401
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0022904669,
+    "stance_prob_in_favor":0.0002599867,
+    "stance_prob_neutral":0.9951316401,
+    "stance_prob_against":0.0046083732,
+    "MP":"Werner Luginbühl",
+    "party":"BDP",
+    "topic":"International Affairs",
+    "rerank_score":0.875
+  },
+  {
+    "speech_id":248797,
+    "paragraph_id":3,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Natürlich ist es dem Parlament unbenommen, mittels Vorstössen Freihandelsabkommen zu fordern, vor allem wenn der Bundesrat diesbezüglich inaktiv ist. Dies trifft im vorliegenden Fall genau nicht zu. Es war der Bundesrat, welcher die Initiative für ein Freihandelsabkommen ergriffen hat. Die Überweisung der Motion könnte nach aussen, vor allem Richtung USA, den Eindruck von Uneinigkeit, von mangelnder Koordination innerhalb der Schweizer Politik erwecken. Unsere Zeit kommt dann, wenn es um die Mandatserteilung geht.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.5303606391
+      },
+      {
+        "token":"B",
+        "logprob":-1.0303606987
+      },
+      {
+        "token":"A",
+        "logprob":-2.9053606987
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0547290468,
+      "AGAINST":0.3568782146,
+      "NEUTRAL":0.5883927386
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0818921638,
+    "stance_prob_in_favor":0.0547290468,
+    "stance_prob_neutral":0.5883927386,
+    "stance_prob_against":0.3568782146,
+    "MP":"Sibel Arslan",
+    "party":"Grüne",
+    "topic":"International Affairs",
+    "rerank_score":0.8671875
+  },
+  {
+    "speech_id":248941,
+    "paragraph_id":7,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"L'objectif est bien d'arriver à un accord équilibré. Dans cette phase exploratoire, la Suisse a commencé à présenter les enjeux. Elle a ainsi fait savoir qu'elle ne souhaitait pas de libre-échange sans limite. Concernant l'agriculture, la Suisse se montre plus flexible qu'il y a treize ans, mais la question de la reconnaissance des appellations d'origine contrôlée devra être posée, celle de la protection de la propriété intellectuelle aussi. L'objectif est d'arriver à des échanges complémentaires utiles aux deux pays.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.2966963947
+      },
+      {
+        "token":"A",
+        "logprob":-1.4216964245
+      },
+      {
+        "token":"B",
+        "logprob":-4.1716961861
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.2413043086,
+      "AGAINST":0.015426072,
+      "NEUTRAL":0.7432696193
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0441875466,
+    "stance_prob_in_favor":0.2413043086,
+    "stance_prob_neutral":0.7432696193,
+    "stance_prob_against":0.015426072,
+    "MP":"Claude Béglé",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.859375
+  },
+  {
+    "speech_id":268458,
+    "paragraph_id":5,
+    "Affair_ID":"20203127",
+    "bill_number":20.3127,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"La motion propose donc de développer la relation, notamment en négociant un accord de libre-échange de nouvelle génération ambitieux. Mais comme l'a indiqué le Conseil fédéral dans sa réponse, la motion ne doit pas être prise trop au pied de la lettre sur ce point. Ce que nous visons, c'est une relation commerciale renouvelée et intensifiée, mais nous sommes parfaitement conscients du fait que, suivant la forme que prendra la relation entre le Royaume-Uni et l'Union européenne - et là bien malin qui sait aujourd'hui quelle forme elle prendra exactement -, la forme juridique de la relation entre la Suisse et le Royaume-Uni peut elle aussi varier. Ce qui compte, ce qui importe, c'est le fond.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0072000078
+      },
+      {
+        "token":"B",
+        "logprob":-5.0072002411
+      },
+      {
+        "token":"A",
+        "logprob":-7.6322002411
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0004845934,
+      "AGAINST":0.0066896061,
+      "NEUTRAL":0.9928258005
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0013892461,
+    "stance_prob_in_favor":0.0004845934,
+    "stance_prob_neutral":0.9928258005,
+    "stance_prob_against":0.0066896061,
+    "MP":"Damien Cottier",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.8515625
+  },
+  {
+    "speech_id":248941,
+    "paragraph_id":5,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Par ailleurs, il est aussi dans notre intérêt de boucler un accord commercial entre la Suisse et les Etats-Unis avant que l'Union européenne ne le fasse. En effet, si la Suisse passe après l'Union européenne, elle y perdra sa marge de manoeuvre et devra se calquer sur ce qui aura déjà été négocié.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0000277754
+      },
+      {
+        "token":"B",
+        "logprob":-11.1250276566
+      },
+      {
+        "token":"C",
+        "logprob":-11.2500276566
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9999722543,
+      "AGAINST":0.0000147388,
+      "NEUTRAL":0.0000130069
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0776086455,
+    "stance_prob_in_favor":0.9999722543,
+    "stance_prob_neutral":0.0000130069,
+    "stance_prob_against":0.0000147388,
+    "MP":"Claude Béglé",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.81640625
+  },
+  {
+    "speech_id":259117,
+    "paragraph_id":2,
+    "Affair_ID":"20184396",
+    "bill_number":18.4396,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Nous nous efforçons d'impliquer le Parlement, les cantons, la société civile, ainsi que les organisations et les associations, dans le processus de libre-échange de la Suisse. Comment cela se passe-t-il, concrètement? En préparation de négociations en vue d'un accord de libre-échange, les Commissions de politique extérieure du Conseil national et du Conseil des Etats, ainsi que la Conférence des gouvernements cantonaux, sont consultées sur les mandats de négociation. C'est prévu à l'article 152 alinéa 3 de la loi sur le Parlement, et la pratique est conforme à ce qui est prévu, à savoir de faire participer les cantons à la politique extérieure.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.001715142
+      },
+      {
+        "token":"A",
+        "logprob":-7.0017151833
+      },
+      {
+        "token":"B",
+        "logprob":-7.1267151833
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0009103193,
+      "AGAINST":0.0008033539,
+      "NEUTRAL":0.9982863268
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0146735109,
+    "stance_prob_in_favor":0.0009103193,
+    "stance_prob_neutral":0.9982863268,
+    "stance_prob_against":0.0008033539,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.81640625
+  },
+  {
+    "speech_id":248944,
+    "paragraph_id":4,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"En conséquence, la question qui se pose à vous, est la suivante: voulez-vous garantir la prospérité de la Suisse grâce à des accords de libre-échange, quitte à devoir faire évidemment, de temps en temps, une concession, ou voulez-vous plutôt opter pour une politique de repli?",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0134096621
+      },
+      {
+        "token":"C",
+        "logprob":-4.3884096146
+      },
+      {
+        "token":"B",
+        "logprob":-7.0134096146
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9866797982,
+      "AGAINST":0.0008997356,
+      "NEUTRAL":0.0124204662
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0048696857,
+    "stance_prob_in_favor":0.9866797982,
+    "stance_prob_neutral":0.0124204662,
+    "stance_prob_against":0.0008997356,
+    "MP":"Claude Béglé",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.80859375
+  },
+  {
+    "speech_id":143750,
+    "paragraph_id":1,
+    "Affair_ID":"20113701",
+    "bill_number":11.3701,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Mit dem Abschluss eines Währungsabkommens mit China würde für die Schweiz das Problem des Wechselkursrisikos nicht reduziert, sondern es würde lediglich vom Dollar auf den Renminbi verlagert. Der Renminbi ist, wie wir wissen, ziemlich eng an den Dollar gekoppelt. Insofern wäre es wahrscheinlich schon nicht so ein wahnsinniger Befreiungsschlag. Auf der anderen Seite ist das Freihandelsabkommen mit China unterzeichnet. Das ist ein historischer Erfolg für die Schweiz. Nun meine ich, dass man auch entsprechend weiter Aktivitäten in diese Richtung entwickeln sollte. Ich hätte Mühe, wenn man einerseits ein Freihandelsabkommen abschliessen und andererseits mit dieser Motion jetzt irgendwo ein Signal setzen würde, das komplett quer in der Landschaft stehen würde. Ich bin mit dem Präsidenten der WAK und anderen Vorrednern darin einig, dass das Währungsabkommen und die ganze Begründung dazu wahrscheinlich das Ziel nicht genau treffen. Möglicherweise wird das kein Schuss ins Schwarze. Eine Ablehnung wäre hingegen ein Schuss neben die Scheibe, in den Dreck hinaus. Das fände ich nun wirklich das Allerschlechteste, was wir machen könnten.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0063978373
+      },
+      {
+        "token":"B",
+        "logprob":-5.2563977242
+      },
+      {
+        "token":"A",
+        "logprob":-6.7563977242
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0011634125,
+      "AGAINST":0.0052140531,
+      "NEUTRAL":0.9936225344
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0018817385,
+    "stance_prob_in_favor":0.0011634125,
+    "stance_prob_neutral":0.9936225344,
+    "stance_prob_against":0.0052140531,
+    "MP":"Hannes Germann",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.796875
+  },
+  {
+    "speech_id":297310,
+    "paragraph_id":4,
+    "Affair_ID":"20213595",
+    "bill_number":21.3595,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"China ist heute für die Schweiz der drittwichtigste Handelspartner. Das seit 2014 bestehende Freihandelsabkommen hat dazu sicherlich einen wesentlichen Beitrag geleistet, aber bei solch engen Wirtschaftsbeziehungen sollte auch eine gewisse Gleichberechtigung bei Investitionen gelten. Im Zuge der Weiterentwicklung dieses Freihandelsabkommens soll der Bundesrat deshalb das Ziel der sogenannten Reziprozität anstreben.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0006490031
+      },
+      {
+        "token":"B",
+        "logprob":-7.5006489754
+      },
+      {
+        "token":"A",
+        "logprob":-9.2506494522
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0000960493,
+      "AGAINST":0.0005527256,
+      "NEUTRAL":0.9993512252
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0021235593,
+    "stance_prob_in_favor":0.0000960493,
+    "stance_prob_neutral":0.9993512252,
+    "stance_prob_against":0.0005527256,
+    "MP":"Christine Bulliard-Marbach",
+    "party":"Mitte",
+    "topic":"International Affairs",
+    "rerank_score":0.70703125
+  },
+  {
+    "speech_id":259117,
+    "paragraph_id":7,
+    "Affair_ID":"20184396",
+    "bill_number":18.4396,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Comme vous pouvez assez le constater, le Conseil fédéral est conscient de l'avantage, et de l'importance aussi, d'une communication active, d'une communication ouverte quant aux défis de la politique commerciale suisse. Et il prévoit aussi d'intensifier encore le dialogue avec le Parlement sur les négociations de libre-échange en cours, et d'informer encore plus systématiquement les Commissions de politique étrangère sur l'état d'avancement des différents processus.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0004544418
+      },
+      {
+        "token":"B",
+        "logprob":-8.1254549026
+      },
+      {
+        "token":"A",
+        "logprob":-8.7504549026
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0001583893,
+      "AGAINST":0.0002959101,
+      "NEUTRAL":0.9995457006
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0089632541,
+    "stance_prob_in_favor":0.0001583893,
+    "stance_prob_neutral":0.9995457006,
+    "stance_prob_against":0.0002959101,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.70703125
+  },
+  {
+    "speech_id":248941,
+    "paragraph_id":1,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Votre Commission de politique extérieure a débattu de la motion du conseiller aux Etats Konrad Graber chargeant le Conseil fédéral de conclure un accord de libre-échange avec les Etats-Unis, ou du moins un accord préférentiel, ceci après consultation avec les partenaires concernés. Le travail de la commission a montré que cet accord est important, mais qu'il doit être équilibré pour les deux partenaires et qu'il nous faut être tenaces face au géant américain.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0111697614
+      },
+      {
+        "token":"C",
+        "logprob":-4.5111699104
+      },
+      {
+        "token":"B",
+        "logprob":-9.0111694336
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9888923608,
+      "AGAINST":0.0001220391,
+      "NEUTRAL":0.0109856002
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0426532004,
+    "stance_prob_in_favor":0.9888923608,
+    "stance_prob_neutral":0.0109856002,
+    "stance_prob_against":0.0001220391,
+    "MP":"Claude Béglé",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.69140625
+  },
+  {
+    "speech_id":281902,
+    "paragraph_id":3,
+    "Affair_ID":"20193596",
+    "bill_number":19.3596,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"En l'état, les discussions exploratoires en sont encore à un stade liminaire. Elles ne se sont en fait pas poursuivies depuis l'arrivée de la pandémie. Suite à l'élection du président Biden, nous devons sonder à nouveau la position de la nouvelle administration vis-à-vis d'un possible accord commercial. De la même manière que nous le faisons avec tous nos partenaires - y compris s'agissant du domaine de l'agriculture -, nous ferions valoir nos intérêts et les préoccupations du peuple suisse face à ces thèmes. Dans ce cadre, je vous prie de rejeter cette motion.",
+    "label":"AGAINST",
+    "llm_raw_response":"{\"answer\": \"B\"}",
+    "llm_emitted_label":"AGAINST",
+    "llm_top_logprobs":[
+      {
+        "token":"B",
+        "logprob":-0.3649067879
+      },
+      {
+        "token":"C",
+        "logprob":-1.2399067879
+      },
+      {
+        "token":"A",
+        "logprob":-4.1149067879
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.016327462,
+      "AGAINST":0.6942613496,
+      "NEUTRAL":0.2894111884
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0592648267,
+    "stance_prob_in_favor":0.016327462,
+    "stance_prob_neutral":0.2894111884,
+    "stance_prob_against":0.6942613496,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.6796875
+  },
+  {
+    "speech_id":297331,
+    "paragraph_id":5,
+    "Affair_ID":"20213595",
+    "bill_number":21.3595,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Une minorité de notre commission considère au contraire qu'il n'est pas judicieux aujourd'hui de contraindre le Conseil fédéral dans les négociations qu'il entamera sur la révision de l'accord de libre-échange. Pour les membres de la minorité, cela revient à lui enlever une part de sa capacité de négociation. Cette minorité considère aussi que la Suisse doit négocier un accès plus équilibré, mais elle estime qu'il est plus pertinent de laisser le Conseil fédéral négocier sans contrainte et d'évaluer le résultat à l'aune du projet de modernisation qui, le cas échéant, sera soumis à notre conseil.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.049353648
+      },
+      {
+        "token":"B",
+        "logprob":-3.0493535995
+      },
+      {
+        "token":"A",
+        "logprob":-7.1743535995
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0007659807,
+      "AGAINST":0.0473895481,
+      "NEUTRAL":0.9518444712
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0185006034,
+    "stance_prob_in_favor":0.0007659807,
+    "stance_prob_neutral":0.9518444712,
+    "stance_prob_against":0.0473895481,
+    "MP":"Nicolas Walder",
+    "party":"Grüne",
+    "topic":"International Affairs",
+    "rerank_score":0.65234375
+  },
+  {
+    "speech_id":248797,
+    "paragraph_id":1,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Handel ist wichtig, aber mit sozialen und ökologischen Leitplanken. Grundsätzlich finden auch wir Freihandelsabkommen wünschenswert und halten es deshalb für notwendig, dass auch ein Weg für ein Freihandelsabkommen mit den USA gefunden werden kann. Schliesslich sind diese unser zweitwichtigster Handelspartner. Der Weg muss aber in Strukturen eingebettet sein, die auch wir befürworten können. Deshalb lehnen ich und die grüne Fraktion die vorliegende Motion ab.",
+    "label":"AGAINST",
+    "llm_raw_response":"{\"answer\": \"B\"}",
+    "llm_emitted_label":"AGAINST",
+    "llm_top_logprobs":[
+      {
+        "token":"B",
+        "logprob":-0.0086310674
+      },
+      {
+        "token":"C",
+        "logprob":-4.8836312294
+      },
+      {
+        "token":"A",
+        "logprob":-6.8836312294
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0010244174,
+      "AGAINST":0.9914061048,
+      "NEUTRAL":0.0075694778
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0871157473,
+    "stance_prob_in_favor":0.0010244174,
+    "stance_prob_neutral":0.0075694778,
+    "stance_prob_against":0.9914061048,
+    "MP":"Sibel Arslan",
+    "party":"Grüne",
+    "topic":"International Affairs",
+    "rerank_score":0.65234375
+  },
+  {
+    "speech_id":268415,
+    "paragraph_id":4,
+    "Affair_ID":"20203127",
+    "bill_number":20.3127,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Konkret, Kollege Cottier: Das Wort \"allein\" ist das Problem in Ihrer Motion. Ja, wir sind für ein umfassendes Freihandelsabkommen mit dem UK, aber im Rahmen der EFTA. Mit einem Vertrag im Rahmen der EFTA können wir die Interessen der Schweizer Exportwirtschaft ohne Kollateralschäden schützen. Mit einem Vertrag im Rahmen der EFTA würden wir uns zur geteilten Verantwortung innerhalb Europas bekennen. Die Zeit von \"me first\" ist vorbei und muss vorbei sein. Wir brauchen multilaterale Ansätze.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.004785513
+      },
+      {
+        "token":"B",
+        "logprob":-5.5047855377
+      },
+      {
+        "token":"A",
+        "logprob":-7.2547855377
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.000706784,
+      "AGAINST":0.0040672609,
+      "NEUTRAL":0.9952259551
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0008356707,
+    "stance_prob_in_favor":0.000706784,
+    "stance_prob_neutral":0.9952259551,
+    "stance_prob_against":0.0040672609,
+    "MP":"Fabian Molina",
+    "party":"SP",
+    "topic":"International Affairs",
+    "rerank_score":0.62109375
+  },
+  {
+    "speech_id":288998,
+    "paragraph_id":7,
+    "Affair_ID":"20213966",
+    "bill_number":21.3966,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Alors que nos partenaires multiplient les remontrances vis-à-vis de Pékin, que le Parlement européen a gelé l'accord sur les investissements avec la Chine, et que plusieurs pays anglo-saxons ont voté des sanctions contre les produits issus de camps de travail dans le Xinjiang, il serait aujourd'hui incompréhensible que la Suisse modernise son accord de libre-échange avec la Chine sans même évoquer la question des droits humains. Cela ne ferait que nous isoler davantage et décrédibiliser la politique commerciale affichée par le Conseil fédéral lors de la récente campagne de votation.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\":\"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.000887596
+      },
+      {
+        "token":"A",
+        "logprob":-7.375887394
+      },
+      {
+        "token":"B",
+        "logprob":-8.2508878708
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0006261708,
+      "AGAINST":0.0002610267,
+      "NEUTRAL":0.9991128025
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.043121449,
+    "stance_prob_in_favor":0.0006261708,
+    "stance_prob_neutral":0.9991128025,
+    "stance_prob_against":0.0002610267,
+    "MP":"Nicolas Walder",
+    "party":"Grüne",
+    "topic":"International Affairs",
+    "rerank_score":0.578125
+  },
+  {
+    "speech_id":135951,
+    "paragraph_id":8,
+    "Affair_ID":"20123014",
+    "bill_number":12.3014,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"A qui profite cet accord? En tout cas pas à nos diplomates suisses puisqu'ils sont déjà très fortement engagés dans les discussions sur le dossier de l'électricité, et aux politiciens encore moins parce que je ne suis pas sûre que la défense de l'accord de libre-échange agricole avec l'Europe soit une très bonne affaire pour eux; on sait à quel point il est dur de le défendre.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.101746574
+      },
+      {
+        "token":"B",
+        "logprob":-2.3517465591
+      },
+      {
+        "token":"A",
+        "logprob":-6.4767465591
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.001538809,
+      "AGAINST":0.0952027416,
+      "NEUTRAL":0.9032584494
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0154072522,
+    "stance_prob_in_favor":0.001538809,
+    "stance_prob_neutral":0.9032584494,
+    "stance_prob_against":0.0952027416,
+    "MP":"Géraldine Savary",
+    "party":"SP",
+    "topic":"International Affairs",
+    "rerank_score":0.5625
+  },
+  {
+    "speech_id":238795,
+    "paragraph_id":1,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Es ist erfreulich, wenn Regierung und Parlament am gleichen Strick in die gleiche Richtung ziehen. Das ist in einem besonderen Mass bei der Motion Graber Konrad der Fall, die schon fast offene Türen einrennt. Dennoch ist diese Motion wichtig, denn das Zeichen, das mit dieser Motion in Richtung der Vereinigten Staaten von Amerika gesendet wird, ist meiner Ansicht nach für die laufenden Gespräche nicht unerheblich. Zwar liegt der Abbruch der letzten Freihandelsverhandlungen mit den USA gut zehn Jahre zurück, aber beide Seiten sind nun wieder zurück am Tisch, um die Möglichkeiten einer verbesserten Zusammenarbeit auszuloten. Aber einen zweiten Rückzug können und dürfen wir uns auf keinen Fall leisten. In diesem Sinne bin ich überzeugt, dass die Motion Graber Konrad ein klares und deutliches Signal ist, dass die Schweizer Politik hinter der Arbeit unseres Wirtschaftsministers steht und diese auch abstützt.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0000147818
+      },
+      {
+        "token":"B",
+        "logprob":-11.3750143051
+      },
+      {
+        "token":"C",
+        "logprob":-12.6250143051
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9999852326,
+      "AGAINST":0.0000114787,
+      "NEUTRAL":0.0000032887
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0457757718,
+    "stance_prob_in_favor":0.9999852326,
+    "stance_prob_neutral":0.0000032887,
+    "stance_prob_against":0.0000114787,
+    "MP":"Damian Müller",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.5625
+  },
+  {
+    "speech_id":248754,
+    "paragraph_id":2,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Ständerat Graber fordert den Bundesrat auf, ein Freihandelsabkommen oder mindestens ein präferenzielles Handelsabkommen mit den USA anzustreben. Er verweist dabei auf die aussenwirtschaftliche Relevanz, denn die USA sind unsere zweitwichtigste und eine zunehmend bedeutende Handelspartnerin, und gleichzeitig auf die Notwendigkeit, innenpolitisch im Rahmen der exploratorischen Gespräche die wesentlichen Interessengruppen zu involvieren. Namentlich genannt werden neben dem zweiten und dritten Wirtschaftssektor insbesondere die Landwirtschafts- und die Konsumentenorganisationen.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0018813782
+      },
+      {
+        "token":"C",
+        "logprob":-6.3768815994
+      },
+      {
+        "token":"B",
+        "logprob":-8.6268815994
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.9981203601,
+      "AGAINST":0.0001792227,
+      "NEUTRAL":0.0017004172
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0165259924,
+    "stance_prob_in_favor":0.9981203601,
+    "stance_prob_neutral":0.0017004172,
+    "stance_prob_against":0.0001792227,
+    "MP":"Christa Markwalder",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.546875
+  },
+  {
+    "speech_id":282022,
+    "paragraph_id":6,
+    "Affair_ID":"20193596",
+    "bill_number":19.3596,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"En janvier 2021, Jacques Pitteloud, ambassadeur de Suisse à Washington, évoquait le fait qu'il sera difficile pour la Suisse  de poursuivre ses efforts avec la nouvelle administration; la tâche sera relativement complexe du fait que l'accord à conclure ces prochaines années risque de se heurter à la question agricole qui reste le principal obstacle, les Américains ayant une agriculture beaucoup plus ouverte sur une libéralisation et sur la compétitivité.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0103897648
+      },
+      {
+        "token":"B",
+        "logprob":-4.8853898048
+      },
+      {
+        "token":"A",
+        "logprob":-5.8853898048
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0027797626,
+      "AGAINST":0.007556178,
+      "NEUTRAL":0.9896640594
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0084707248,
+    "stance_prob_in_favor":0.0027797626,
+    "stance_prob_neutral":0.9896640594,
+    "stance_prob_against":0.007556178,
+    "MP":"Jacques Nicolet",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.53125
+  },
+  {
+    "speech_id":135950,
+    "paragraph_id":3,
+    "Affair_ID":"20123014",
+    "bill_number":12.3014,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Diese Tatsache ändert nichts daran, dass jene, die noch billiger einkaufen wollen, um ihre Margen zu verbessern, uns immer wieder das Wort \"Hochpreisinsel\" um die Ohren schlagen. Ja, warum ist die Schweiz eine Hochpreisinsel? Weil wir die weltweit höchsten Löhne verdienen. Das ist der Hauptgrund. Wenn man aber etwas genauer hinschaut, dann stellt man fest, dass nirgendwo auf der Welt ein kleinerer Anteil des Haushaltbudgets für Lebensmittel aufgewendet wird als in der Schweiz. Dennoch haben wir auf die heutige Diskussion hin Dutzende von Zuschriften erhalten, in denen gesagt wird, ein Freihandelsabkommen Schweiz-EU im Agrarbereich sei von entscheidender Bedeutung. Es wird dargelegt, dass die Nahrungsmittelindustrie, die in den letzten Jahren ihre Exporte erfreulicherweise verdoppeln konnte, abwandern werde, wenn sie nicht endlich günstiger einkaufen könne.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.3790485561
+      },
+      {
+        "token":"A",
+        "logprob":-1.3790485859
+      },
+      {
+        "token":"B",
+        "logprob":-2.7540485859
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.2518180314,
+      "AGAINST":0.0636695693,
+      "NEUTRAL":0.6845123993
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0571232928,
+    "stance_prob_in_favor":0.2518180314,
+    "stance_prob_neutral":0.6845123993,
+    "stance_prob_against":0.0636695693,
+    "MP":"Werner Luginbühl",
+    "party":"BDP",
+    "topic":"International Affairs",
+    "rerank_score":0.515625
+  },
+  {
+    "speech_id":238795,
+    "paragraph_id":3,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"DE",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Es ist mir gleichzeitig auch ein Anliegen, für die Initiative unseres Bundesrates und sein Geschick, welches er immer wieder an den Tag gelegt hat, zu danken. Er hat uns den privilegierten Zugang zum Reich der Mitte, nach China, geöffnet. Unsere Konkurrenten in Europa warten weiterhin auf diesen Zugang. Die Schweiz als kleine Wirtschaftsmacht hat diesen Zugang bereits. Es ist auch der Initiative von Bundesrat Schneider-Ammann zu verdanken, dass er nun in acht Tagen in Indonesien das nächste Freihandelsabkommen unterzeichnen wird. So bilden die beiden Freihandelsabkommen einen erfolgreichen Bogen, vom Anfang bis zum Ende.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0028703702
+      },
+      {
+        "token":"B",
+        "logprob":-6.3778705597
+      },
+      {
+        "token":"A",
+        "logprob":-6.7528705597
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0011675234,
+      "AGAINST":0.0016987365,
+      "NEUTRAL":0.9971337402
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0046796228,
+    "stance_prob_in_favor":0.0011675234,
+    "stance_prob_neutral":0.9971337402,
+    "stance_prob_against":0.0016987365,
+    "MP":"Damian Müller",
+    "party":"FDP-Liberale",
+    "topic":"International Affairs",
+    "rerank_score":0.484375
+  },
+  {
+    "speech_id":281902,
+    "paragraph_id":2,
+    "Affair_ID":"20193596",
+    "bill_number":19.3596,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Il est fondamental de rappeler que la Suisse n'abaisse pas ses prescriptions sanitaires et phytosanitaires dans le cadre d'une négociation de libre-échange. Les exigences suisses pour la mise sur le marché de produits importés resteraient valables et il n'y aurait pas de conséquences sur la santé des consommateurs. L'accord de libre-échange peut prévoir des procédures pour faciliter les contrôles sanitaires entre les parties.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0102913668
+      },
+      {
+        "token":"A",
+        "logprob":-5.0102915764
+      },
+      {
+        "token":"B",
+        "logprob":-5.6352915764
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0066689585,
+      "AGAINST":0.0035696362,
+      "NEUTRAL":0.9897614053
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0063076219,
+    "stance_prob_in_favor":0.0066689585,
+    "stance_prob_neutral":0.9897614053,
+    "stance_prob_against":0.0035696362,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.484375
+  },
+  {
+    "speech_id":248941,
+    "paragraph_id":9,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Il y aura bien sûr des points à éclaircir, comme l'ont fait savoir certains membres de la commission: dans quelle mesure la Suisse peut-elle faire de l'agriculture un secteur stratégique, au même titre que les Américains font de l'aluminium et de l'acier deux secteurs stratégiques de leur économie? Les USA tâtent aussi le terrain pour connaître notre réceptivité aux OGM; le niveau de flexibilité devra être clarifié. Madame la secrétaire d'Etat Ineichen-Fleisch s'est toutefois montrée rassurante. Selon elle, les Etats-Unis doivent prendre conscience qu'ils ne peuvent exporter vers la Suisse que des produits de haute qualité et dans des quantités limitées. Si l'agriculture est intégrée dans l'accord, la Suisse défendra l'idée qu'une grande partie de ce secteur est d'intérêt national et qu'elle doit être préservée. La Suisse n'acceptera pas de conditions intenables.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0104403757
+      },
+      {
+        "token":"B",
+        "logprob":-5.2604403496
+      },
+      {
+        "token":"A",
+        "logprob":-5.2604403496
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0051930176,
+      "AGAINST":0.0051930176,
+      "NEUTRAL":0.9896139648
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0076776929,
+    "stance_prob_in_favor":0.0051930176,
+    "stance_prob_neutral":0.9896139648,
+    "stance_prob_against":0.0051930176,
+    "MP":"Claude Béglé",
+    "party":"CVP",
+    "topic":"International Affairs",
+    "rerank_score":0.46875
+  },
+  {
+    "speech_id":248779,
+    "paragraph_id":3,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Le 5 septembre de l'année passée, la Commission de l'économie et des redevances du Conseil national avait approuvé une proposition recommandant de mener des discussions exploratoires pour un possible accord de libre-échange avec les Etats-Unis. Ces négociations ont débuté et nous les poursuivons actuellement. Elles doivent permettre de déterminer, de part et d'autre, les positions, les attentes, les opportunités, et de voir s'il existe une base commune pour pouvoir lancer de vraies négociations s'appuyant sur un vrai mandat de négociation, avec comme but un succès.",
+    "label":"IN FAVOR",
+    "llm_raw_response":"{\"answer\": \"A\"}",
+    "llm_emitted_label":"IN FAVOR",
+    "llm_top_logprobs":[
+      {
+        "token":"A",
+        "logprob":-0.0010727848
+      },
+      {
+        "token":"C",
+        "logprob":-6.8760728836
+      },
+      {
+        "token":"B",
+        "logprob":-10.1260728836
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.998927788,
+      "AGAINST":0.0000400223,
+      "NEUTRAL":0.0010321896
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0293589974,
+    "stance_prob_in_favor":0.998927788,
+    "stance_prob_neutral":0.0010321896,
+    "stance_prob_against":0.0000400223,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.453125
+  },
+  {
+    "speech_id":248779,
+    "paragraph_id":1,
+    "Affair_ID":"20183797",
+    "bill_number":18.3797,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Les Etats-Unis sont le deuxième partenaire commercial de la Suisse après l'Union européenne. En 2017, 15 pour cent de nos exportations de marchandises ont été acheminées vers les Etats-Unis et 7 pour cent de nos importations en provenaient. Le commerce total incluant les marchandises et les services s'est élevé à près de 120 milliards de francs suisses. La Suisse est, avec un capital de 309 milliards de dollars, le septième investisseur le plus important aux Etats-Unis.",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0002358874
+      },
+      {
+        "token":"A",
+        "logprob":-8.8752355576
+      },
+      {
+        "token":"B",
+        "logprob":-9.2502355576
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0001398087,
+      "AGAINST":0.000096089,
+      "NEUTRAL":0.9997641023
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.0079135702,
+    "stance_prob_in_favor":0.0001398087,
+    "stance_prob_neutral":0.9997641023,
+    "stance_prob_against":0.000096089,
+    "MP":"Guy Parmelin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.4375
+  },
+  {
+    "speech_id":226024,
+    "paragraph_id":1,
+    "Affair_ID":"20163332",
+    "bill_number":16.3332,
+    "date":null,
+    "language":"FR",
+    "retrieval_query":"Should Switzerland strive for a free-trade agreement with the US?",
+    "passage":"Monsieur le conseiller fédéral, je vous remercie de l'intérêt que vous portez à ces négociations. Mais, toute négociation étant une affaire d'équilibre, ne pensez-vous pas que les demandes de la Malaisie relatives aux produits de haute technologie de l'industrie suisse pourraient être mises en balance avec la problématique de l'huile de palme, dont le libre commerce gênerait vraiment la production d'oléagineux en Suisse?",
+    "label":"NEUTRAL",
+    "llm_raw_response":"{\"answer\": \"C\"}",
+    "llm_emitted_label":"NEUTRAL",
+    "llm_top_logprobs":[
+      {
+        "token":"C",
+        "logprob":-0.0018417554
+      },
+      {
+        "token":"B",
+        "logprob":-6.3768415451
+      },
+      {
+        "token":"A",
+        "logprob":-8.8768415451
+      },
+      {
+        "token":"!",
+        "logprob":-9999.0
+      }
+    ],
+    "llm_label_probabilities":{
+      "IN FAVOR":0.0001395843,
+      "AGAINST":0.0017004854,
+      "NEUTRAL":0.9981599303
+    },
+    "llm_label_mismatch":false,
+    "perplexity":1.003594499,
+    "stance_prob_in_favor":0.0001395843,
+    "stance_prob_neutral":0.9981599303,
+    "stance_prob_against":0.0017004854,
+    "MP":"Jean-Pierre Grin",
+    "party":"SVP",
+    "topic":"International Affairs",
+    "rerank_score":0.421875
+  }
+]
