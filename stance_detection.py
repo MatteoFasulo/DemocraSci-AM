@@ -21,6 +21,8 @@ pipeline. Probability column names follow the backend's label vocabulary.
 from __future__ import annotations
 
 import asyncio
+import functools
+import json
 
 from dataclasses import dataclass
 from typing import Literal
@@ -33,7 +35,12 @@ import torch
 from pydantic import BaseModel
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from const import STANCE_DETECTION_MODEL, STANCE_LLM_LABELS, STANCE_LLM_SYSTEM_PROMPT
+from const import (
+    STANCE_DETECTION_MODEL,
+    STANCE_LLM_DEMONSTRATIONS_PATH,
+    STANCE_LLM_LABELS,
+    STANCE_LLM_SYSTEM_PROMPT,
+)
 
 STANCE_CLASSES = tuple(STANCE_LLM_LABELS.values())
 
@@ -166,16 +173,53 @@ async def score_stance(
     return scored
 
 
+def _stance_user_turn(claim: str, passage: str) -> str:
+    """Format a CLAIM/PASSAGE user turn, shared by demonstrations and the real query."""
+    return f"CLAIM:\n{claim}\n\nPASSAGE:\n{passage}"
+
+
+@functools.lru_cache(maxsize=1)
+def _load_stance_demonstrations() -> dict[str, list[dict[str, str]]]:
+    """Load few-shot demonstrations, keyed by exact stance-claim text.
+
+    Cached after the first call since the same file backs every request in a
+    run. Missing file/claim just means no demonstrations for that claim (falls
+    back to zero-shot) rather than an error.
+    """
+    path = Path(__file__).parent / STANCE_LLM_DEMONSTRATIONS_PATH
+    if not path.exists():
+        return {}
+    with path.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _build_stance_messages(stance_claim: str, passage: str) -> list[dict[str, str]]:
+    """Build the chat messages: system prompt, static few-shot demonstrations
+    for this exact claim (as prior user/assistant turns), then the passage to
+    classify.
+
+    Demonstrations are inserted as genuine prior turns rather than appended as
+    text within a single user message, so the demonstrated answers sit in the
+    assistant role — matching the exact response the model is being asked to
+    produce — which chat-tuned models follow more reliably than a flat block
+    of example text.
+    """
+    messages = [{"role": "system", "content": STANCE_LLM_SYSTEM_PROMPT}]
+    demonstrations = _load_stance_demonstrations().get(stance_claim, [])
+    for demo in demonstrations:
+        messages.append({"role": "user", "content": _stance_user_turn(stance_claim, demo["passage"])})
+        messages.append({"role": "assistant", "content": json.dumps({"answer": demo["answer"]})})
+    messages.append({"role": "user", "content": _stance_user_turn(stance_claim, passage)})
+    return messages
+
+
 async def _stance_llm_choice(
     client: AsyncOpenAI, model_name: str, stance_claim: str, passage: str
 ):
     """Request a stance label using the validated JSON response schema."""
     response = await client.chat.completions.parse(
         model=model_name,
-        messages=[
-            {"role": "system", "content": STANCE_LLM_SYSTEM_PROMPT},
-            {"role": "user", "content": f"CLAIM:\n{stance_claim}\n\nPASSAGE:\n{passage}"},
-        ],
+        messages=_build_stance_messages(stance_claim, passage),
         temperature=0.0,
         max_tokens=8,
         logprobs=True,

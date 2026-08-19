@@ -1,0 +1,562 @@
+{
+  "Should Switzerland strive for a free-trade agreement with the US?": [
+    {
+      "passage": "Ich habe diese Motion vor allem aus folgenden Gründen eingereicht: Die USA und insbesondere deren Botschafter in der Schweiz haben signalisiert, dass die US-Administration an einem Freihandelsabkommen mit der Schweiz interessiert sein könnte. Das wurde auch auf anderen Kanälen zusätzlich bestätigt. Der US-Markt ist für die Schweiz sehr wichtig: Der Exportanteil stieg in den letzten zehn Jahren von 9,7 auf 15,3 Prozent. Wenn man das Wachstum betrachtet, dann stellt man fest, dass man in den letzten fünf Jahren die Exporte in die USA um 50 Prozent steigern konnte, jene in die EU hingegen nur um 5 Prozent. Es gibt hier also auch eine Verschiebung der Marktanteile, und ich denke, dass das - auch in Hinsicht auf Abhängigkeiten - sehr gut für unser Land ist. Das Potenzial ist gross: Es gibt gegenüber den USA viele tarifäre und technische Handelshemmnisse, und diese sollte man reduzieren oder abbauen. Gerade vor dem Hintergrund der schwierigen Verhandlungen mit der EU ist es auch vorteilhaft, mit einem anderen wichtigen Markt im Gespräch zu sein und die Handelsbeziehungen auszubauen.",
+      "answer": "A"
+    },
+    {
+      "passage": "Handel ist wichtig, aber mit sozialen und ökologischen Leitplanken. Grundsätzlich finden auch wir Freihandelsabkommen wünschenswert und halten es deshalb für notwendig, dass auch ein Weg für ein Freihandelsabkommen mit den USA gefunden werden kann. Schliesslich sind diese unser zweitwichtigster Handelspartner. Der Weg muss aber in Strukturen eingebettet sein, die auch wir befürworten können. Deshalb lehnen ich und die grüne Fraktion die vorliegende Motion ab.",
+      "answer": "B"
+    },
+    {
+      "passage": "Alors que nos partenaires multiplient les remontrances vis-à-vis de Pékin, que le Parlement européen a gelé l'accord sur les investissements avec la Chine, et que plusieurs pays anglo-saxons ont voté des sanctions contre les produits issus de camps de travail dans le Xinjiang, il serait aujourd'hui incompréhensible que la Suisse modernise son accord de libre-échange avec la Chine sans même évoquer la question des droits humains. Cela ne ferait que nous isoler davantage et décrédibiliser la politique commerciale affichée par le Conseil fédéral lors de la récente campagne de votation.",
+      "answer": "C"
+    }
+  ],
+  "Promote public transport instead of expanding motorways.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Reject higher parking fees (reduce them instead) and stop cuts to parking spaces.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Give Swiss quality products priority over cheap imports on the Swiss market.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Introduce mandatory labelling of foods containing GMO components.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "End the tax and AHV discrimination against married and registered couples.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Open marriage to same-sex couples, including access to reproductive medicine.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Protect children's sexual integrity from pornography and the sex industry.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Rethink the penal system: less therapy, more punishment.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Invite religious organisations to sign the Charter of Religious Communities as a binding commitment to the rule of law and human rights.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Keep and teach the current national anthem in public schools.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Reduce administrative burden and over-regulation, especially for SMEs.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Award public contracts only to Swiss firms registered in the sector for at least 5 years.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Promote MINT/STEM fields among young people and women.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Find a long-term solution for exchange of students and researchers (successor to Erasmus).": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Expand solar energy in particular.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Keep the current proven electricity mix and reject early shutdown of existing nuclear plants.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "From 2030, invest no more Swiss money in the development of fossil fuels.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Oblige pension funds to divest shares of coal, gas and oil companies within five years.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Reform the withholding tax so that corporate financing in Switzerland becomes attractive again.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Keep cash in Switzerland as a means of payment and oppose forced conversion to purely electronic money.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Conduct regular, comprehensive task reviews to cut superfluous administrative tasks and units.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Reduce federal personnel to the 2015 level and massively cut personnel expenditure.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Lower medicine prices and cut the price of generics.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Reject any increase of deductibles (franchises).": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Continue the bilateral path with the EU and prevent termination of the bilateral treaties.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "End Swiss financial support of UNRWA.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Introduce better dismissal protection for older workers.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Better use domestic labour potential to ease the skills shortage (older workers, working women).": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Recognize and promote refugees' skills acquired abroad and significantly increase federal integration funds so refugees can earn money quickly.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Withdraw Swiss citizenship from naturalized persons who commit particularly serious crimes.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Abolish the civilian service and integrate those liable into the army or civil protection.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Stand for a non-aligned Switzerland with no further integration into NATO.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Renounce raising the number of signatures required for referendums and initiatives.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Reject a national inheritance tax.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Flatten the progression rates in taxation.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Provide more and cheaper external (family-supplementary) childcare.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Reject raising the AHV retirement age.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Rapidly expand the fibre-optic and 5G mobile networks to maintain a technological lead.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ],
+  "Reject the introduction of e-voting in Switzerland.": [
+    {
+      "passage": "REPLACE ME: a short real passage clearly IN FAVOR of the claim.",
+      "answer": "A"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage clearly AGAINST the claim.",
+      "answer": "B"
+    },
+    {
+      "passage": "REPLACE ME: a short real passage that is NEUTRAL toward or unrelated to the claim.",
+      "answer": "C"
+    }
+  ]
+}
