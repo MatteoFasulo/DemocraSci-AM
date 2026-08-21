@@ -1,6 +1,6 @@
 # MappingDemocraSci
 
-MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swiss parliamentary speech. It retrieves bills with high recall, narrows their paragraphs with a cross-encoder, and applies a fine-tuned mDeBERTa stance classifier to the retained evidence.
+MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swiss parliamentary speech. It retrieves bills with high recall, narrows their paragraphs with a cross-encoder, and applies a stance classifier to the retained evidence.
 
 ## Pipeline overview
 
@@ -35,37 +35,52 @@ flowchart TD
     G -->|No| I[Retained below-threshold pool]
 ```
 
-**Current status:** stance detection code exists but is currently disabled in
-main.py. The current outputs are retrieval and reranking outputs only.
+## Docker 
 
-## RunAI
+### Minimal RunAI Image
 
-Image is based on `nvcr.io/nvidia/pytorch:25.06-py3` with 1 GPU with 20% of its memory (~16GB of A100).
-
+A minimal image is available on Docker Hub at [`hub.docker.com/repository/docker/samarinm/democrasci-am:minimal`](https://hub.docker.com/r/samarinm/democrasci-am), based on
+`Dockerfile_minimal`. It contains only system packages and a uv-managed Python venv with dependencies from `pyproject.toml`. 
 <details>
 
-<summary>RunAI CLI instructions</summary>
+<summary>RunAI CLI instructions with custom image</summary>
 
 Run the following command to submit a job:
 
 ```bash
 runai workspace submit <JOB_NAME> \
--i nvcr.io/nvidia/pytorch:25.06-py3 \
+-i samarinm/democrasci-am:minimal \
 --gpu-request-type portion \
 --gpu-portion-request 0.20 \
---gpu-devices-request 1
+--gpu-devices-request 1 \
+--preemptibility preemptible 
 ```
 
-To expose the SSH port and connect to the workspace, run:
+Note that the `--preemptibility preemptible` flag is only necessary when you exceed your GPU quota of 0.2.
+
+Connect to the workspace with
+```bash
+kubectl -it exec "pod/<JOB_NAME>-0-0" -n "runai-politperformance-<YOUR_USER>" -- /bin/bash
+```
+or, alternatively,
+```bash
+ssh root@localhost -p 2222
+```
+
+In order to allow port forwarding, you need to add the following (once) to your `~/.bashrc` file, which you
+can conveniently do with the following commands (after connecting to the workspace):
+
+```bash
+echo 'source /quickstart/scripts/helperfunctions.sh' >> /myhome/.bashrc
+echo 'ssh_enable_ubuntu   # in case you need ssh login e.g. for forwarding ssh-keys, using file explorer, etc. or need the scp command.' >> /myhome/.bashrc
+```
+
+Whenever you source `~/.bashrc` or start a new terminal, the `ssh_enable_ubuntu` command will enable SSH login.
+
+Now, to expose the SSH port from your local terminal, run:
 
 ```bash
 kubectl port-forward "pod/<JOB_NAME>-0-0" 2222:22 -n "runai-politperformance-<YOUR_USER>"
-```
-
-then connect in interactive mode with:
-
-```bash
-ssh root@localhost -p 2222
 ```
 
 </details>
@@ -241,75 +256,3 @@ python runner.py
 
 The runner calls main.py sequentially and writes one artifact directory per
 policy solution under outputs/.
-
-## Docker 
-
-### Minimal RunAI Image
-
-A minimal image is available on Docker Hub at `hub.docker.com/repository/docker/samarinm/democrasci-am:minimal`, based on
-`Dockerfile_minimal`. It contains only system packages and a uv-managed Python venv with dependencies from `pyproject.toml`. 
-<details>
-
-<summary>RunAI CLI instructions with custom image</summary>
-
-Run the following command to submit a job:
-
-```bash
-runai workspace submit <JOB_NAME> \
--i samarinm/democrasci-am:minimal \
---gpu-request-type portion \
---gpu-portion-request 0.20 \
---gpu-devices-request 1 \
---preemptibility preemptible 
-```
-
-Note that the `--preemptibility preemptible` flag is only necessary when you exceed your GPU quota of 0.2.
-
-Connect to the workspace with
-```bash
-kubectl -it exec "pod/<JOB_NAME>-0-0" -n "runai-politperformance-<YOUR_USER>" -- /bin/bash
-```
-or, alternatively,
-```bash
-ssh root@localhost -p 2222
-```
-
-In order to allow port forwarding, you need to add the following (once) to your `~/.bashrc` file, which you
-can conveniently do with the following commands (after connecting to the workspace):
-
-```bash
-echo 'source /quickstart/scripts/helperfunctions.sh' >> /myhome/.bashrc
-echo 'ssh_enable_ubuntu   # in case you need ssh login e.g. for forwarding ssh-keys, using file explorer, etc. or need the scp command.' >> /myhome/.bashrc
-```
-
-Whenever you source `~/.bashrc` or start a new terminal, the `ssh_enable_ubuntu` command will enable SSH login.
-
-Now, to expose the SSH port from your local terminal, run:
-
-```bash
-kubectl port-forward "pod/<JOB_NAME>-0-0" 2222:22 -n "runai-politperformance-<YOUR_USER>"
-```
-
-</details>
-
-
-### Advanced RunAI Image (currently broken)
-
-**NOTE:** The Dockerfile is currently broken due to an issue with SSH interactive sessions.
-
-The image for RunAI is available on GitHub Container Registry at `ghcr.io/matteofasulo/democrasci-am:latest`.
-
-To pull the image from GitHub Container Registry, run:
-
-```bash
-docker pull ghcr.io/matteofasulo/democrasci-am:latest
-```
-
-### Development
-
-To create the image needed for the workflow, run:
-
-```bash
-docker build --no-cache --pull -f Dockerfile -t ghcr.io/matteofasulo/democrasci-am:latest .
-docker push ghcr.io/matteofasulo/democrasci-am:latest
-```
