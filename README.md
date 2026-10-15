@@ -35,12 +35,12 @@ flowchart TD
     G -->|No| I[Retained below-threshold pool]
 ```
 
-## Docker 
+## Docker
 
 ### Minimal RunAI Image
 
 A minimal image is available on Docker Hub at [`hub.docker.com/repository/docker/samarinm/democrasci-am:minimal`](https://hub.docker.com/r/samarinm/democrasci-am), based on
-`Dockerfile_minimal`. It contains only system packages and a uv-managed Python venv with dependencies from `pyproject.toml`. 
+`Dockerfile_minimal`. It contains only system packages and a uv-managed Python venv with dependencies from `pyproject.toml`.
 <details>
 
 <summary>RunAI CLI instructions with custom image</summary>
@@ -53,7 +53,7 @@ runai workspace submit <JOB_NAME> \
 --gpu-request-type portion \
 --gpu-portion-request 0.20 \
 --gpu-devices-request 1 \
---preemptibility preemptible 
+--preemptibility preemptible
 ```
 
 Note that the `--preemptibility preemptible` flag is only necessary when you exceed your GPU quota of 0.2.
@@ -205,6 +205,24 @@ python main.py \
 
 main.py uses http://127.0.0.1:8000 by default. To use another service
 address, add --service-url http://HOST:PORT.
+
+### Streamlit dashboard
+
+With the model service running, start the dashboard in another terminal:
+
+```bash
+streamlit run dashboard.py
+```
+
+Enter a claim, choose how many bills to retrieve, and optionally select a
+speaker. If you select a speaker, only bills with at least one of their
+paragraphs are included.
+
+The dashboard first finds relevant bills, then retrieves and reranks paragraphs
+from those bills. With a speaker selected, it shows only that person's
+paragraphs; otherwise, it searches all speakers. You can adjust the paragraph
+retrieval pool and use the score slider to show stronger matches. Speaker names
+link to their Swiss Parliament biography when an ID is available.
 
 ### Custom stance LLM backend
 
