@@ -107,7 +107,7 @@ def show_bill_table(records: list[dict]) -> None:
             count_label = "Paragraphs"
 
         affair_url = (
-            "https://www.parlament.ch/it/ratsbetrieb/suche-curia-vista/geschaeft?"
+            f"https://www.parlament.ch/{DEFAULT_LANG}/ratsbetrieb/suche-curia-vista/geschaeft?"
             f"{urlencode({'AffairId': affair_id})}"
         )
         affair_display = f"[↗ {affair_id}]({affair_url})" if affair_id else "—"
@@ -203,14 +203,9 @@ except requests.RequestException as exc:
 speakers = speaker_facets.get("speakers", [])
 speaker_ids = speaker_facets.get("speaker_ids", {})
 
-heading_col, workflow_col = st.columns([0.76, 0.24])
-with heading_col:
-    st.markdown('<div class="eyebrow">DemocraSci · Evidence explorer</div>', unsafe_allow_html=True)
-    st.title("Parliamentary evidence")
-    st.write("Find relevant bills, then inspect the strongest matching speech paragraphs.")
-with workflow_col:
-    st.markdown("**Workflow**")
-    st.caption("① Retrieve bills  →  ② Rerank evidence")
+st.markdown('<div class="eyebrow">DemocraSci · Evidence explorer</div>', unsafe_allow_html=True)
+st.title("Parliamentary evidence")
+st.write("Find relevant bills, then inspect the strongest matching speech paragraphs.")
 
 st.markdown("## 1 · Find candidate bills")
 with st.container(border=True):
