@@ -222,7 +222,8 @@ The dashboard first finds relevant bills, then retrieves and reranks paragraphs
 from those bills. With a speaker selected, it shows only that person's
 paragraphs; otherwise, it searches all speakers. You can adjust the paragraph
 retrieval pool and use the score slider to show stronger matches. Speaker names
-link to their Swiss Parliament biography when an ID is available.
+link to their Swiss Parliament biography when an ID is available. Download the
+paragraphs currently shown as a JSON file using the button above the results.
 
 ### Custom stance LLM backend
 

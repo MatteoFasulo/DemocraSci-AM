@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 import pandas as pd
 import requests
 import streamlit as st
+import plotly.graph_objects as go
 
 from const import N_TOP_BILLS
 
@@ -375,7 +376,28 @@ if candidate_bills is not None:
                     f"{len(matches):,}",
                     delta=f"of {len(all_passages):,} reranked",
                 )
+        st.plotly_chart(
+            go.Figure(
+                go.Histogram(
+                    x=all_passages["rerank_score"],
+                    nbinsx=20,
+                )
+            ).update_layout(
+                title="Rerank score distribution",
+                xaxis_title="Rerank score",
+                yaxis_title="Paragraph count",
+                margin=dict(l=0, r=0, t=30, b=0),
+            ),
+            width="content",
+        )
         if matches.empty:
             st.info("No paragraphs meet this score cutoff. Lower the slider to include more results.")
         else:
+            st.download_button(
+                "Download paragraphs as JSON",
+                data=matches.to_json(orient="records", force_ascii=False, indent=2),
+                file_name="parliamentary_paragraphs.json",
+                mime="application/json",
+                help="Exports the paragraphs currently shown above the score cutoff.",
+            )
             show_paragraph_cards(matches)
