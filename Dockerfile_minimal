@@ -1,0 +1,53 @@
+# ================================================================
+# Minimal Dockerfile for RunAI
+# System packages + uv-managed Python venv from pyproject.toml
+#
+# Build with (note: platform flag necessary for RunAI)
+# docker build --platform=linux/amd64 -f Dockerfile_minimal -t democrasci-am:minimal .
+#
+# ================================================================
+
+FROM nvcr.io/nvidia/pytorch:25.06-py3
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# ---- System packages ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    git \
+    screen \
+    nano \
+    vim \
+    htop \
+    rsync \
+    build-essential \
+    software-properties-common \
+    bubblewrap \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---- For Claude Code: Node.js + npm ----
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g @anthropic-ai/claude-code
+
+# ---- uv (fast Python package manager) ----
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# ---- Python venv ----
+# Installed into the image, NOT on NFS — this makes imports fast.
+RUN uv venv /opt/venv
+
+# Add venv to PATH so it works even without explicit activation
+# (e.g., `runai exec` bypasses any entrypoint/.bashrc sourcing).
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
+
+# ---- Dependencies from pyproject.toml ----
+COPY pyproject.toml /tmp/pyproject.toml
+RUN uv pip install -r /tmp/pyproject.toml \
+    && rm /tmp/pyproject.toml \

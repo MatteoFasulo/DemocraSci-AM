@@ -1,0 +1,25 @@
+[
+  {
+    "corpus_id":11,
+    "rerank_score":0.70703125,
+    "paragraph_id":3,
+    "meeting_date":"2019-03-12",
+    "speech_id":242204,
+    "speaker_id":4216.0,
+    "party_name":"Schweizerische Volkspartei",
+    "Affair_ID":"20170478",
+    "bill_number":17.478,
+    "speaker_full_name":"Diana Gutjahr",
+    "bill_title_de":"Die Landeshymne der Schweizerischen Eidgenossenschaft demokratisch festlegen",
+    "bill_title_fr":"Consacrer démocratiquement le \"Cantique suisse\" comme étant l'hymne national de la Suisse",
+    "language":"DE",
+    "bill_labels":"Parliamentary Initiative",
+    "party":"SVP",
+    "chroma_id":"242204:3",
+    "text":"Auch habe ich mitbekommen, dass neben den Kantonen und Gemeinden auch Schulen angegangen werden, um unter anderem unsere Kinder die neue Schweizer Nationalhymne zu lehren. Damit verabschieden wir uns bewusst von einem Teil unserer Identität und schüren in dieser Sache vorsätzlich Unsicherheit in der Bevölkerung. Für alle von uns - davon gehe ich aus - ist eine Hymne wie auch eine Landesfahne mit vielen Emotionen und grossem Nationalstolz verbunden. Wie spüren wir doch beim Anstimmen und Singen unserer Hymne eine starke Verbundenheit der ganzen Bevölkerung mit unserer Heimat! Es wird Ihnen sicherlich leichtfallen, mir in dieser Sache zuzustimmen, da eine diesbezügliche Verunsicherung unseres Zusammengehörigkeitsgefühls kein Verständnis findet.",
+    "dense_score":55.6381464005,
+    "retrieval_query":"Keep and teach the current national anthem in public schools.",
+    "stance_claim":"Keep and teach the current national anthem in public schools.",
+    "topic":"Culture, Arts, Religion, Sport, Entertainment"
+  }
+]
