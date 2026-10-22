@@ -6,10 +6,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+import llm
+
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_FILE = SCRIPT_DIR / "data" / "policy_solutions_classified.json"
 MAIN_FILE = SCRIPT_DIR / "main.py"
+
+STANCE_API_BASE_URL = "https://api.deepseek.com/v1"
+STANCE_API_KEY = llm.get_key(explicit_key="deepseek-key")
+
+# STANCE_API_BASE_URL = "https://vllm-gateway-runai-sharedllm-ralf.inference.compute.datascience.ch/v1"
+# STANCE_API_KEY = llm.get_key(explicit_key="sdsc-key")
 
 TOPIC_ALIASES = {
     "Culture, Religion, Sports, Entertainment":
@@ -53,6 +61,10 @@ def main() -> None:
                 policy_solution,
                 "--stance-claim",
                 policy_solution,
+                "--stance-api-base-url",
+                STANCE_API_BASE_URL,
+                "--stance-api-key",
+                STANCE_API_KEY,
             ],
             cwd=SCRIPT_DIR,
             check=True,

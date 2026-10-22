@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -10,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import click
+from openai import AsyncOpenAI
 import pandas as pd
 import requests
 import torch
@@ -28,6 +30,7 @@ from stance_detection import (
     load_stance_classifier,
     save_stance_results,
     score_stance,
+    score_stance_custom,
 )
 
 
@@ -137,6 +140,12 @@ def save_manifest(path: Path, config: dict[str, Any], counts: dict[str, int]) ->
     default=False,
     help="Include the language-matched bill title in Qwen reranking documents.",
 )
+@click.option("--stance-api-base-url", default=None,
+              help="Base URL for the custom stance detection API. "
+                   "If provided, a custom stance model will be used instead of the default model.")
+@click.option("--stance-api-key", default=None,
+              help="API key for the custom stance detection API. "
+                   "If provided, a custom stance model will be used instead of the default model.")
 def cli(
     output_dir: Path,
     run_name: str,
@@ -145,6 +154,8 @@ def cli(
     stance_claim: str,
     paragraph_dense_pool: int,
     batch_size: int,
+    stance_api_base_url: str | None,
+    stance_api_key: str | None,
     chroma_db_path: Path,
     bill_collection: str,
     paragraph_collection: str,
@@ -186,19 +197,31 @@ def cli(
     save_records(passages_before_threshold, run_dir / "candidate_passages_before_threshold.json")
     save_records(passages, run_dir / "candidate_passages.json")
 
-    # if passages.empty:
-    #    stance_results = passages.copy()
-    # else:
-    #    tokenizer, stance_model_object, stance_device = load_stance_classifier()
-    #    stance_results = score_stance(
-    #        passages,
-    #        stance_claim=stance_claim,
-    #        tokenizer=tokenizer,
-    #        model=stance_model_object,
-    #        device=stance_device,
-    #        batch_size=batch_size,
-    #    )
-    # save_stance_results(stance_results, run_dir / "stance_predictions.json")
+    if stance_api_base_url:
+        async def score_with_custom_api() -> pd.DataFrame:
+            async with AsyncOpenAI(api_key=stance_api_key, base_url=stance_api_base_url) as stance_client:
+                return await score_stance_custom(
+                    passages,
+                    stance_claim=stance_claim,
+                    client=stance_client,
+                    model_name=STANCE_DETECTION_MODEL,
+                )
+
+        stance_results = asyncio.run(score_with_custom_api())
+    else:
+        if passages.empty:
+           stance_results = passages.copy()
+        else:
+           tokenizer, stance_model_object, stance_device = load_stance_classifier()
+           stance_results = asyncio.run(score_stance(
+               passages,
+               stance_claim=stance_claim,
+               tokenizer=tokenizer,
+               model=stance_model_object,
+               device=stance_device,
+               batch_size=batch_size,
+           ))
+    save_stance_results(stance_results, run_dir / "stance_predictions.json")
 
     config = {
         "chroma_db_path": str(chroma_db_path),
@@ -224,7 +247,7 @@ def cli(
             "candidate_bills": len(candidate_bills),
             "candidate_passages_before_threshold": len(passages_before_threshold),
             "candidate_passages": len(passages),
-            # "stance_predictions": len(stance_results),
+            "stance_predictions": len(stance_results),
         },
     )
     logger.info(

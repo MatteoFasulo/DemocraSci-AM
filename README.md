@@ -1,6 +1,6 @@
 # MappingDemocraSci
 
-MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swiss parliamentary speech. It retrieves bills with high recall, narrows their paragraphs with a cross-encoder, and applies a fine-tuned mDeBERTa stance classifier to the retained evidence.
+MappingDemocraSci is a two-stage retrieval and stance-detection pipeline for Swiss parliamentary speech. It retrieves bills with high recall, narrows their paragraphs with a cross-encoder, and applies a stance classifier to the retained evidence.
 
 ## Pipeline overview
 
@@ -35,37 +35,52 @@ flowchart TD
     G -->|No| I[Retained below-threshold pool]
 ```
 
-**Current status:** stance detection code exists but is currently disabled in
-main.py. The current outputs are retrieval and reranking outputs only.
+## Docker
 
-## RunAI
+### Minimal RunAI Image
 
-Image is based on `nvcr.io/nvidia/pytorch:25.06-py3` with 1 GPU with 20% of its memory (~16GB of A100).
-
+A minimal image is available on Docker Hub at [`hub.docker.com/repository/docker/samarinm/democrasci-am:minimal`](https://hub.docker.com/r/samarinm/democrasci-am), based on
+`Dockerfile_minimal`. It contains only system packages and a uv-managed Python venv with dependencies from `pyproject.toml`.
 <details>
 
-<summary>RunAI CLI instructions</summary>
+<summary>RunAI CLI instructions with custom image</summary>
 
 Run the following command to submit a job:
 
 ```bash
 runai workspace submit <JOB_NAME> \
--i nvcr.io/nvidia/pytorch:25.06-py3 \
+-i samarinm/democrasci-am:minimal \
 --gpu-request-type portion \
 --gpu-portion-request 0.20 \
---gpu-devices-request 1
+--gpu-devices-request 1 \
+--preemptibility preemptible
 ```
 
-To expose the SSH port and connect to the workspace, run:
+Note that the `--preemptibility preemptible` flag is only necessary when you exceed your GPU quota of 0.2.
+
+Connect to the workspace with
+```bash
+kubectl -it exec "pod/<JOB_NAME>-0-0" -n "runai-politperformance-<YOUR_USER>" -- /bin/bash
+```
+or, alternatively,
+```bash
+ssh root@localhost -p 2222
+```
+
+In order to allow port forwarding, you need to add the following (once) to your `~/.bashrc` file, which you
+can conveniently do with the following commands (after connecting to the workspace):
+
+```bash
+echo 'source /quickstart/scripts/helperfunctions.sh' >> /myhome/.bashrc
+echo 'ssh_enable_ubuntu   # in case you need ssh login e.g. for forwarding ssh-keys, using file explorer, etc. or need the scp command.' >> /myhome/.bashrc
+```
+
+Whenever you source `~/.bashrc` or start a new terminal, the `ssh_enable_ubuntu` command will enable SSH login.
+
+Now, to expose the SSH port from your local terminal, run:
 
 ```bash
 kubectl port-forward "pod/<JOB_NAME>-0-0" 2222:22 -n "runai-politperformance-<YOUR_USER>"
-```
-
-then connect in interactive mode with:
-
-```bash
-ssh root@localhost -p 2222
 ```
 
 </details>
@@ -81,7 +96,7 @@ uv sync
 alternatively, use pip:
 
 ```bash
-pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly fastapi streamlit
+pip install --break-system-packages sentence-transformers openai chromadb seaborn plotly fastapi
 ```
 
 The Chroma ingestion command consumes `data/speeches_with_text.parquet`. Generate it first by reassembling the original dataset from the 3 parts:
@@ -191,6 +206,65 @@ python main.py \
 main.py uses http://127.0.0.1:8000 by default. To use another service
 address, add --service-url http://HOST:PORT.
 
+### Streamlit dashboard
+
+With the model service running, start the dashboard in another terminal:
+
+```bash
+streamlit run dashboard.py
+```
+
+Enter a claim, choose how many bills to retrieve, and optionally select a
+speaker. If you select a speaker, only bills with at least one of their
+paragraphs are included.
+
+The dashboard first finds relevant bills, then retrieves and reranks paragraphs
+from those bills. With a speaker selected, it shows only that person's
+paragraphs; otherwise, it searches all speakers. You can adjust the paragraph
+retrieval pool and use the score slider to show stronger matches. Speaker names
+link to their Swiss Parliament biography when an ID is available. Download the
+paragraphs currently shown as a JSON file using the button above the results.
+
+### Custom stance LLM backend
+
+By default, stance detection uses the local classifier configured via
+`STANCE_DETECTION_MODEL` in `const.py`. To use a chat LLM served behind an
+OpenAI-compatible endpoint instead (e.g. an internal vLLM gateway), pass
+`--stance-api-base-url` and `--stance-api-key`:
+
+```bash
+python main.py \
+  --run-name free-trade-us \
+  --topic "International Affairs" \
+  --retrieval-query "Should Switzerland strive for a free-trade agreement with the US?" \
+  --stance-api-base-url "$API_BASE_URL" \
+  --stance-api-key "$API_KEY"
+```
+
+`--stance-api-key` expects the resolved secret, not a `keys.json` alias — use
+`llm keys get <alias>` (or `llm.get_key(explicit_key=<alias>)` in Python) to
+resolve it first, as shown above, e.g.
+
+```bash
+export API_BASE_URL="https://.../v1"
+export API_KEY="$(llm keys get sdsc-key)"
+```
+
+**Important:** whenever `--stance-api-base-url` is set, `STANCE_DETECTION_MODEL`
+in `const.py` must hold the model name served at that endpoint (e.g.
+`Qwen/Qwen3.6-35B-A3B-FP8`), not a local Hugging Face classifier repo ID — the
+same constant is used for both backends and is not automatically kept in sync.
+Leaving `--stance-api-base-url` unset falls back to the local classifier, which
+requires `STANCE_DETECTION_MODEL` to point at a real sequence-classification
+checkpoint instead.
+
+The custom backend requests one of the labels `A` (in favor), `B` (against), or
+`C` (neutral), using the endpoint's guided-choice support. Some
+OpenAI-compatible servers ignore guided choice and return prose; in that case
+the scorer falls back to the first-token logprob distribution over `A`, `B`,
+and `C`. The endpoint must therefore support `logprobs` and expose all three
+label candidates in `top_logprobs`.
+
 ### Run all policy solutions
 
 Keep Terminal 1 running, then in Terminal 2 execute:
@@ -201,24 +275,3 @@ python runner.py
 
 The runner calls main.py sequentially and writes one artifact directory per
 policy solution under outputs/.
-
-## Docker (broken)
-
-**NOTE:** The Dockerfile is currently broken due to an issue with SSH interactive sessions.
-
-The image for RunAI is available on GitHub Container Registry at `ghcr.io/matteofasulo/democrasci-am:latest`.
-
-To pull the image from GitHub Container Registry, run:
-
-```bash
-docker pull ghcr.io/matteofasulo/democrasci-am:latest
-```
-
-### Development
-
-To create the image needed for the workflow, run:
-
-```bash
-docker build --no-cache --pull -f Dockerfile -t ghcr.io/matteofasulo/democrasci-am:latest .
-docker push ghcr.io/matteofasulo/democrasci-am:latest
-```

@@ -25,12 +25,24 @@ def load_reranker_model(
     )
 
 
-def score_bills(retrieval_query: str, bill_collection: Collection, top_k_bills: int) -> pd.DataFrame:
+def score_bills(
+    retrieval_query: str,
+    bill_collection: Collection,
+    top_k_bills: int,
+    affair_ids: list[str] | None = None,
+) -> pd.DataFrame:
     """Return bills ranked by Chroma cosine similarity."""
+    if affair_ids is not None and not affair_ids:
+        return pd.DataFrame()
+    query_args = {
+        "query_texts": [retrieval_query],
+        "n_results": top_k_bills,
+        "include": ["documents", "metadatas", "distances"],
+    }
+    if affair_ids is not None:
+        query_args["where"] = {"Affair_ID": {"$in": affair_ids}}
     result = bill_collection.query(
-        query_texts=[retrieval_query],
-        n_results=top_k_bills,
-        include=["documents", "metadatas", "distances"],
+        **query_args,
     )
     ids = result.get("ids", [[]])[0]
     if not ids:
@@ -90,16 +102,26 @@ def score_paragraphs(
     dense_pool_size: int,
     batch_size: int,
     contextual_reranking: bool = False,
+    speaker_names: list[str] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Retrieve a Chroma paragraph pool and rerank it with Qwen."""
     if candidate_bills.empty:
         empty = pd.DataFrame()
         return empty, empty
     affair_ids = candidate_bills["Affair_ID"].astype(str).tolist()
+    where: dict = {"Affair_ID": {"$in": affair_ids}}
+    selected_speakers = [name.strip() for name in (speaker_names or []) if name.strip()]
+    if selected_speakers:
+        where = {
+            "$and": [
+                {"Affair_ID": {"$in": affair_ids}},
+                {"speaker_full_name": {"$in": selected_speakers}},
+            ]
+        }
     result = paragraph_collection.query(
         query_texts=[retrieval_query],
         n_results=dense_pool_size,
-        where={"Affair_ID": {"$in": affair_ids}},
+        where=where,
         include=["documents", "metadatas", "distances"],
     )
     ids = result.get("ids", [[]])[0]

@@ -1,0 +1,27 @@
+{
+  "created_at": "2026-08-19T12:08:04.639137+00:00",
+  "device": "cuda",
+  "config": {
+    "chroma_db_path": "/mydata/politperformance/shared/matteof/chromadb",
+    "bill_collection": "DemocraSci_bills",
+    "paragraph_collection": "DemocraSci_paragraphs",
+    "contextual_reranking": false,
+    "run_name": "free-trade-us",
+    "topic": "International Affairs",
+    "retrieval_query": "Should Switzerland strive for a free-trade agreement with the US?",
+    "stance_claim": "Should Switzerland strive for a free-trade agreement with the US?",
+    "top_bills": 50,
+    "paragraph_dense_pool": 100,
+    "rerank_threshold": 0.4,
+    "embedding_model": "microsoft/harrier-oss-v1-0.6b",
+    "stance_model": "deepseek-v4-flash"
+  },
+  "counts": {
+    "eligible_paragraphs": 169679,
+    "available_bills": 5437,
+    "candidate_bills": 50,
+    "candidate_passages_before_threshold": 100,
+    "candidate_passages": 42,
+    "stance_predictions": 42
+  }
+}
