@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import threading
 import unicodedata
@@ -9,31 +10,46 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 import pandas as pd
-import torch
-import streamlit as st
 import plotly.graph_objects as go
+import streamlit as st
+import torch
 from chromadb.api.models.Collection import Collection
+from huggingface_hub import sync_bucket
 from sentence_transformers import CrossEncoder
 
-from const import N_TOP_BILLS, RERANKER_MODEL, RERANK_THRESHOLD
+from const import N_TOP_BILLS, RERANK_THRESHOLD, RERANKER_MODEL
 from scripts.chroma_store import (
     BILLS_COLLECTION,
     PARAGRAPHS_COLLECTION,
     open_chroma_collections,
 )
 
-
 DEFAULT_CLAIM = "Switzerland should pursue a free-trade agreement with the US."
 DEFAULT_LANG = "en"
-CHROMA_PATH = Path(__file__).resolve().parent.parent / "hf-bucket"
+CHROMA_PATH = Path(os.environ.get("CHROMA_PATH", "hf-bucket"))
+HF_BUCKET_SOURCE = os.environ.get(
+    "HF_BUCKET_SOURCE",
+    "hf://buckets/MatteoFasulo/DemocraSci-ChromaDB/DemocraSci-ChromaDB/",
+)
 
 
-@st.cache_resource(show_spinner="Loading Chroma collections and reranker…")
+@st.cache_resource(show_spinner="Downloading the Chroma index if needed and loading search…")
 def load_dashboard_state() -> DashboardState:
-    """Open Chroma and the reranker from the Renku data connector."""
+    """Download the public index if needed, then open Chroma and the reranker."""
+    if not (CHROMA_PATH / "chroma.sqlite3").is_file():
+        CHROMA_PATH.mkdir(parents=True, exist_ok=True)
+        try:
+            sync_bucket(HF_BUCKET_SOURCE, str(CHROMA_PATH), token=False)
+        except Exception as exc:
+            raise RuntimeError(
+                "Could not download the Chroma index anonymously from the Hugging Face Bucket. "
+                "Confirm the bucket is public and that HF_BUCKET_SOURCE points to the folder "
+                f"containing chroma.sqlite3. Source: {HF_BUCKET_SOURCE}. Details: {exc}"
+            ) from exc
     if not (CHROMA_PATH / "chroma.sqlite3").is_file():
         raise FileNotFoundError(
-            f"Could not find chroma.sqlite3 in the Renku data connector mounted at {CHROMA_PATH}"
+            f"The Hugging Face Bucket download completed, but chroma.sqlite3 was not found in {CHROMA_PATH}. "
+            f"Set HF_BUCKET_SOURCE to the bucket folder containing chroma.sqlite3 (currently {HF_BUCKET_SOURCE})."
         )
     return DashboardState(CHROMA_PATH)
 
@@ -387,7 +403,8 @@ with st.sidebar:
     except Exception as exc:
         st.error(f"Local index is not ready: {exc}")
         st.caption(
-            "Confirm the Renku data connector is mounted at the configured path and contains chroma.sqlite3."
+            "The public Hugging Face Bucket is downloaded to the app's local filesystem on startup. "
+            "Check that the bucket is public and the configured source folder contains chroma.sqlite3."
         )
         st.stop()
 
@@ -400,38 +417,33 @@ st.title("Parliamentary evidence")
 st.write("Find relevant bills, then inspect the strongest matching speech paragraphs.")
 
 st.markdown("## 1 · Find candidate bills")
-with st.container(border=True):
-    with st.form("bill_search_form"):
-        claim = st.text_input(
-            "Claim",
-            value=DEFAULT_CLAIM,
-            placeholder="Write a policy claim to search for…",
-            help="This claim drives both bill retrieval and paragraph reranking.",
+with st.container(border=True), st.form("bill_search_form"):
+    claim = st.text_input(
+        "Claim",
+        value=DEFAULT_CLAIM,
+        placeholder="Write a policy claim to search for…",
+        help="This claim drives both bill retrieval and paragraph reranking.",
+    )
+    speaker_col, bill_limit_col = st.columns([0.62, 0.38])
+    with speaker_col:
+        selected_speaker = st.selectbox(
+            "Speaker (optional)",
+            options=speakers,
+            index=None,
+            placeholder="Search all speakers",
+            help="When selected, only bills where this speaker participated are eligible.",
         )
-        if speaker_error:
-            st.warning(
-                f"Speaker list unavailable; you can still search without a speaker filter. {speaker_error}"
-            )
-        speaker_col, bill_limit_col = st.columns([0.62, 0.38])
-        with speaker_col:
-            selected_speaker = st.selectbox(
-                "Speaker (optional)",
-                options=speakers,
-                index=None,
-                placeholder="Search all speakers",
-                help="When selected, only bills where this speaker participated are eligible.",
-            )
-        with bill_limit_col:
-            bill_limit = st.number_input(
-                "Bills to retrieve",
-                min_value=1,
-                max_value=1000,
-                value=N_TOP_BILLS,
-                help="Maximum number of relevant bills returned after speaker preselection.",
-            )
-        search_bills = st.form_submit_button(
-            "Retrieve bills", type="primary", disabled=not claim.strip()
+    with bill_limit_col:
+        bill_limit = st.number_input(
+            "Bills to retrieve",
+            min_value=1,
+            max_value=1000,
+            value=N_TOP_BILLS,
+            help="Maximum number of relevant bills returned after speaker preselection.",
         )
+    search_bills = st.form_submit_button(
+        "Retrieve bills", type="primary", disabled=not claim.strip()
+    )
 
 if selected_speaker:
     profile_url = parliament_profile_url(selected_speaker, speaker_ids.get(selected_speaker))
@@ -559,19 +571,18 @@ if candidate_bills is not None:
                 payload["speaker_name"] = speaker_name
             try:
                 candidate_bill_frame = pd.DataFrame({"Affair_ID": affair_ids})
-                with st.spinner("Retrieving paragraphs and applying the reranker…"):
-                    with state.lock:
-                        before_threshold = query_and_rerank_paragraphs(
-                            retrieval_query=payload["retrieval_query"],
-                            stance_claim=payload["stance_claim"],
-                            paragraph_collection=state.paragraph_store,
-                            candidate_bills=candidate_bill_frame,
-                            reranker=state.reranker,
-                            dense_pool_size=payload["paragraph_dense_pool"],
-                            batch_size=int(reranker_batch_size),
-                            contextual_reranking=contextual_reranking,
-                            speaker_names=[speaker_name] if speaker_name else [],
-                        )
+                with st.spinner("Retrieving paragraphs and applying the reranker…"), state.lock:
+                    before_threshold = query_and_rerank_paragraphs(
+                        retrieval_query=payload["retrieval_query"],
+                        stance_claim=payload["stance_claim"],
+                        paragraph_collection=state.paragraph_store,
+                        candidate_bills=candidate_bill_frame,
+                        reranker=state.reranker,
+                        dense_pool_size=payload["paragraph_dense_pool"],
+                        batch_size=int(reranker_batch_size),
+                        contextual_reranking=contextual_reranking,
+                        speaker_names=[speaker_name] if speaker_name else [],
+                    )
                 st.session_state["paragraph_pool"] = before_threshold.to_dict(orient="records")
                 st.session_state["paragraph_search_error"] = None
             except Exception as exc:
