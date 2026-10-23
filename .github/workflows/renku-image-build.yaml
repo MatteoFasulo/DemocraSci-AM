@@ -31,8 +31,14 @@ jobs:
           tags: |
             type=sha,prefix=
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+      - name: Format image tags for Renku build action
+        id: image-tags
+        env:
+          IMAGE_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          printf 'tags=%s\n' "${IMAGE_TAGS//$'\n'/,}" >> "$GITHUB_OUTPUT"
       - name: Build RenkuLab image
         uses: swissdatasciencecenter/renku-frontend-buildpacks/actions/build-image@main
         with:
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.image-tags.outputs.tags }}
           frontend: jupyterlab
