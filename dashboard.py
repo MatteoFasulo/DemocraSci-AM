@@ -544,18 +544,6 @@ if candidate_bills is not None:
                     value=100,
                     help="How many paragraph candidates to retrieve and rerank.",
                 )
-                contextual_reranking = st.checkbox(
-                    "Include bill title in reranker context",
-                    value=False,
-                    help="Adds each paragraph's bill title to the reranker input when available.",
-                )
-                reranker_batch_size = st.number_input(
-                    "Reranker batch size",
-                    min_value=1,
-                    max_value=512,
-                    value=128,
-                    help="Larger batches may use more memory, especially on CPU.",
-                )
                 run_reranking = st.form_submit_button(
                     "Retrieve and rerank paragraphs", type="primary"
                 )
@@ -579,8 +567,8 @@ if candidate_bills is not None:
                         candidate_bills=candidate_bill_frame,
                         reranker=state.reranker,
                         dense_pool_size=payload["paragraph_dense_pool"],
-                        batch_size=int(reranker_batch_size),
-                        contextual_reranking=contextual_reranking,
+                        batch_size=min(dense_pool, 32),
+                        contextual_reranking=False,
                         speaker_names=[speaker_name] if speaker_name else [],
                     )
                 st.session_state["paragraph_pool"] = before_threshold.to_dict(orient="records")
