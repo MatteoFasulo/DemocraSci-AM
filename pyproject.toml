@@ -31,5 +31,8 @@ dependencies = [
     "uvicorn>=0.34",
 ]
 
+[tool.poetry]
+package-mode = false
+
 [tool.ruff]
 line-length = 119
