@@ -10,6 +10,15 @@ ui_port="${RENKU_SESSION_PORT:-8501}"
 # the App's local filesystem instead of opening the database over object storage.
 bucket_id="${HF_CHROMA_BUCKET:-MatteoFasulo/DemocraSci-ChromaDB}"
 cache_dir="${CHROMA_CACHE_DIR:-/tmp/democrasci-chromadb}"
+# Renku sessions can mount saved secrets as files. Renku Apps cannot access
+# session secrets, so this is optional and must never be configured as an App
+# launcher variable.
+hf_token_file="${HF_TOKEN_FILE:-/secrets/hf_token.txt}"
+if [[ -z "${HF_TOKEN:-}" && -r "$hf_token_file" ]]; then
+  HF_TOKEN="$(tr -d '\r\n' < "$hf_token_file")"
+  export HF_TOKEN
+fi
+
 if [[ -n "${CHROMA_PATH:-}" && -f "${CHROMA_PATH}/chroma.sqlite3" ]]; then
   chroma_path="$CHROMA_PATH"
 elif cached_sqlite="$(find "$cache_dir" -type f -name chroma.sqlite3 -print -quit 2>/dev/null)" && [[ -n "$cached_sqlite" ]]; then
