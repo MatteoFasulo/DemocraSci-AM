@@ -2,6 +2,8 @@ name: build image
 
 on:
   push:
+    branches:
+      - master
 
 jobs:
   build-image:
@@ -28,8 +30,7 @@ jobs:
           images: ghcr.io/${{ github.repository }}/renku-image
           tags: |
             type=sha,prefix=
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=semver,pattern={{version}},event=tag
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
       - name: Build RenkuLab image
         uses: swissdatasciencecenter/renku-frontend-buildpacks/actions/build-image@main
         with:
