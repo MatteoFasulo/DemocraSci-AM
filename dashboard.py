@@ -4,34 +4,238 @@ from __future__ import annotations
 
 import os
 import re
+import threading
 import unicodedata
+from pathlib import Path
 from urllib.parse import urlencode
 
 import pandas as pd
-import requests
+import torch
 import streamlit as st
 import plotly.graph_objects as go
+from chromadb.api.models.Collection import Collection
+from sentence_transformers import CrossEncoder
 
-from const import N_TOP_BILLS
+from const import N_TOP_BILLS, RERANKER_MODEL, RERANK_THRESHOLD
+from scripts.chroma_store import (
+    BILLS_COLLECTION,
+    PARAGRAPHS_COLLECTION,
+    open_chroma_collections,
+)
 
 
-DEFAULT_SERVICE_URL = os.getenv("DEMOCRASCI_SERVICE_URL", "http://127.0.0.1:8000")
 DEFAULT_CLAIM = "Switzerland should pursue a free-trade agreement with the US."
 DEFAULT_LANG = "en"
 
 
-@st.cache_data(ttl=30, show_spinner=False)
-def load_health(service_url: str) -> dict:
-    response = requests.get(f"{service_url.rstrip('/')}/health", timeout=5)
-    response.raise_for_status()
-    return response.json()
+@st.cache_resource(show_spinner="Loading Chroma collections and reranker…")
+def load_dashboard_state() -> DashboardState:
+    """Open the local Chroma collections and reranker for this Streamlit app."""
+    chroma_path = Path(os.environ.get("CHROMA_PATH", "/home/renku/work/hf-bucket/"))
+    if not (chroma_path / "chroma.sqlite3").is_file():
+        cache_dir = Path(os.environ.get("CHROMA_CACHE_DIR", "/tmp/democrasci-chromadb"))
+        search_dirs = [chroma_path, cache_dir]
+        sqlite_file = next(
+            (path for directory in search_dirs if directory.exists()
+             for path in directory.rglob("chroma.sqlite3")),
+            None,
+        )
+        if sqlite_file is None:
+            raise FileNotFoundError(
+                f"No chroma.sqlite3 found in {chroma_path} or downloaded bucket cache {cache_dir}"
+            )
+        chroma_path = sqlite_file.parent
+        os.environ["CHROMA_PATH"] = str(chroma_path)
+    return DashboardState(chroma_path)
 
 
-@st.cache_data(ttl=3600, show_spinner="Loading speaker names…")
-def load_speaker_facets(service_url: str) -> dict:
-    response = requests.get(f"{service_url.rstrip('/')}/facets", timeout=120)
-    response.raise_for_status()
-    return response.json()
+def load_dashboard_reranker(device: torch.device | str | None = None) -> CrossEncoder:
+    """Load the cross-encoder used to rerank retrieved speech paragraphs."""
+    return CrossEncoder(
+        RERANKER_MODEL,
+        device=device,
+        activation_fn=torch.nn.Sigmoid(),
+        prompts={"classification": "Classify whether the document matches the query policy claim"},
+        default_prompt_name="classification",
+    )
+
+
+def query_bills(
+    retrieval_query: str,
+    bill_collection: Collection,
+    top_k_bills: int,
+    affair_ids: list[str] | None = None,
+) -> pd.DataFrame:
+    """Query the bill collection and return bills ranked by cosine similarity."""
+    if affair_ids is not None and not affair_ids:
+        return pd.DataFrame()
+    query_args = {
+        "query_texts": [retrieval_query],
+        "n_results": top_k_bills,
+        "include": ["documents", "metadatas", "distances"],
+    }
+    if affair_ids is not None:
+        query_args["where"] = {"Affair_ID": {"$in": affair_ids}}
+    result = bill_collection.query(**query_args)
+    ids = result.get("ids", [[]])[0]
+    if not ids:
+        return pd.DataFrame()
+    rows = []
+    for rank, (bill_id, document, metadata, distance) in enumerate(
+        zip(ids, result["documents"][0], result["metadatas"][0], result["distances"][0], strict=True),
+        start=1,
+    ):
+        row = dict(metadata or {})
+        row["Affair_ID"] = str(row.get("Affair_ID", bill_id))
+        row["bill_search_text"] = document
+        row["bill_embedding_score"] = (1.0 - float(distance)) * 100
+        row["bill_embedding_rank"] = rank
+        row["bill_rank"] = rank
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def _reranker_documents(passages: pd.DataFrame, contextual_reranking: bool) -> list[str]:
+    if not contextual_reranking:
+        return passages["text"].astype(str).tolist()
+    documents = []
+    for row in passages.itertuples(index=False):
+        values = row._asdict()
+        language = str(values.get("language", "")).upper()
+        title = str(values.get("bill_title_de" if language == "DE" else "bill_title_fr", "") or "").strip()
+        paragraph = str(values.get("text", ""))
+        documents.append(f"Bill title: {title}\n\nParagraph: {paragraph}" if title else paragraph)
+    return documents
+
+
+def query_and_rerank_paragraphs(
+    retrieval_query: str,
+    stance_claim: str,
+    paragraph_collection: Collection,
+    candidate_bills: pd.DataFrame,
+    reranker: CrossEncoder,
+    dense_pool_size: int,
+    batch_size: int,
+    contextual_reranking: bool = False,
+    speaker_names: list[str] | None = None,
+) -> pd.DataFrame:
+    """Query paragraphs within candidate bills, rerank them, and return the full pool."""
+    if candidate_bills.empty:
+        return pd.DataFrame()
+    affair_ids = candidate_bills["Affair_ID"].astype(str).tolist()
+    where: dict = {"Affair_ID": {"$in": affair_ids}}
+    selected_speakers = [name.strip() for name in (speaker_names or []) if name.strip()]
+    if selected_speakers:
+        where = {"$and": [where, {"speaker_full_name": {"$in": selected_speakers}}]}
+    result = paragraph_collection.query(
+        query_texts=[retrieval_query],
+        n_results=dense_pool_size,
+        where=where,
+        include=["documents", "metadatas", "distances"],
+    )
+    ids = result.get("ids", [[]])[0]
+    if not ids:
+        return pd.DataFrame()
+    passages = []
+    for index, (paragraph_id, document, metadata, distance) in enumerate(
+        zip(ids, result["documents"][0], result["metadatas"][0], result["distances"][0], strict=True)
+    ):
+        row = dict(metadata or {})
+        row.update({"chroma_id": paragraph_id, "text": document, "corpus_id": index,
+                    "dense_score": (1.0 - float(distance)) * 100})
+        passages.append(row)
+    passage_df = pd.DataFrame(passages)
+    ranked = reranker.rank(
+        query=stance_claim,
+        documents=_reranker_documents(passage_df, contextual_reranking),
+        top_k=len(passage_df),
+        return_documents=False,
+        batch_size=batch_size,
+        show_progress_bar=True,
+    )
+    pool = pd.DataFrame(ranked).merge(passage_df, on="corpus_id", how="left")
+    if "score" in pool.columns:
+        pool = pool.rename(columns={"score": "rerank_score"})
+    elif "rerank_score" not in pool.columns:
+        raise ValueError("Reranker output does not expose a score field")
+    pool = pool.sort_values("rerank_score", ascending=False).reset_index(drop=True)
+    pool["retrieval_query"] = retrieval_query
+    pool["stance_claim"] = stance_claim
+    pool["topic"] = ""
+    return pool
+
+
+class DashboardState:
+    def __init__(self, db_path: Path) -> None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.bill_store, self.paragraph_store = open_chroma_collections(
+            db_path=db_path,
+            bills_name=BILLS_COLLECTION,
+            paragraphs_name=PARAGRAPHS_COLLECTION,
+            device=device,
+        )
+        self.reranker = load_dashboard_reranker(device)
+        self.lock = threading.Lock()
+        self.facets_lock = threading.Lock()
+        self._speaker_names: list[str] | None = None
+        self._speaker_affair_counts: dict[str, dict[str, int]] | None = None
+        self._speaker_ids: dict[str, str] | None = None
+
+    def _load_speaker_facets(self) -> None:
+        if self._speaker_affair_counts is not None:
+            return
+        counts: dict[str, dict[str, int]] = {}
+        speaker_ids: dict[str, str] = {}
+        page_size = 10_000
+        offset = 0
+        while True:
+            page = self.paragraph_store.get(
+                include=["metadatas"], limit=page_size, offset=offset
+            )
+            metadatas = page.get("metadatas", []) or []
+            for metadata in metadatas:
+                values = metadata or {}
+                name = str(values.get("speaker_full_name", "")).strip()
+                affair_id = str(values.get("Affair_ID", "")).strip()
+                raw_speaker_id = values.get("speaker_id")
+                if name and raw_speaker_id not in (None, "") and name not in speaker_ids:
+                    if isinstance(raw_speaker_id, float) and raw_speaker_id.is_integer():
+                        speaker_ids[name] = str(int(raw_speaker_id))
+                    else:
+                        speaker_ids[name] = str(raw_speaker_id).strip()
+                if name and affair_id:
+                    speaker_counts = counts.setdefault(name, {})
+                    speaker_counts[affair_id] = speaker_counts.get(affair_id, 0) + 1
+            offset += len(metadatas)
+            if len(metadatas) < page_size:
+                break
+        self._speaker_affair_counts = counts
+        self._speaker_names = sorted(counts, key=str.casefold)
+        self._speaker_ids = speaker_ids
+
+    def speaker_names(self) -> list[str]:
+        """Return cached distinct speaker names from paragraph metadata."""
+        with self.facets_lock:
+            self._load_speaker_facets()
+            return self._speaker_names
+
+    def speaker_ids(self) -> dict[str, str]:
+        """Return the parliamentary member ID associated with each speaker."""
+        with self.facets_lock:
+            self._load_speaker_facets()
+            return self._speaker_ids
+
+    def speaker_bill_counts(self, speaker_names: list[str]) -> dict[str, int]:
+        """Return each bill's maximum paragraph count among selected speakers."""
+        with self.facets_lock:
+            self._load_speaker_facets()
+            affair_counts: dict[str, int] = {}
+            for speaker_name in speaker_names:
+                for affair_id, count in self._speaker_affair_counts.get(speaker_name, {}).items():
+                    affair_counts[affair_id] = max(affair_counts.get(affair_id, 0), count)
+            return affair_counts
+
+
 
 
 def parliament_profile_url(name: str, speaker_id: object) -> str | None:
@@ -184,23 +388,22 @@ st.set_page_config(
 
 with st.sidebar:
     st.markdown("### Search settings")
-    service_url = st.text_input("Model service URL", value=DEFAULT_SERVICE_URL).rstrip("/")
     try:
-        health = load_health(service_url)
+        state = load_dashboard_state()
         st.success(
-            f"Service ready · {health.get('bills', 0):,} bills · "
-            f"{health.get('paragraphs', 0):,} paragraphs",
+            f"Index ready · {state.bill_store.count():,} bills · "
+            f"{state.paragraph_store.count():,} paragraphs",
             icon="✅",
         )
-    except requests.RequestException as exc:
-        st.error(f"Model service unavailable: {exc}")
+    except Exception as exc:
+        st.error(f"Local index is not ready: {exc}")
+        st.caption(
+            "The Chroma index must be downloaded to CHROMA_PATH before retrieval. "
+            "Refresh this page after the index finishes syncing."
+        )
+        st.stop()
 
-speaker_facets: dict = {}
-speaker_error: str | None = None
-try:
-    speaker_facets = load_speaker_facets(service_url)
-except requests.RequestException as exc:
-    speaker_error = str(exc)
+speaker_facets: dict = {"speakers": state.speaker_names(), "speaker_ids": state.speaker_ids()}
 speakers = speaker_facets.get("speakers", [])
 speaker_ids = speaker_facets.get("speaker_ids", {})
 
@@ -257,14 +460,29 @@ if search_bills:
             if selected_speaker:
                 payload["speaker_name"] = selected_speaker
                 payload["min_speaker_paragraphs"] = 1
-            response = requests.post(f"{service_url}/bills", json=payload, timeout=3600)
-            response.raise_for_status()
-        st.session_state["candidate_bills"] = response.json().get("candidate_bills", [])
+            speaker_names = [selected_speaker] if selected_speaker else []
+            speaker_bill_counts = state.speaker_bill_counts(speaker_names) if speaker_names else None
+            affair_ids = None
+            if speaker_bill_counts is not None:
+                affair_ids = [
+                    affair_id
+                    for affair_id, count in speaker_bill_counts.items()
+                    if count >= 1
+                ]
+            with state.lock:
+                candidate_bill_df = query_bills(
+                    payload["retrieval_query"], state.bill_store, payload["top_k_bills"], affair_ids
+                )
+            if speaker_bill_counts is not None and not candidate_bill_df.empty:
+                candidate_bill_df["speaker_paragraph_count"] = candidate_bill_df["Affair_ID"].map(
+                    speaker_bill_counts
+                )
+        st.session_state["candidate_bills"] = candidate_bill_df.to_dict(orient="records")
         st.session_state["search_claim"] = claim.strip()
         st.session_state["search_speaker_name"] = selected_speaker
         st.session_state["paragraph_pool"] = None
         st.session_state["bill_search_error"] = None
-    except requests.RequestException as exc:
+    except Exception as exc:
         st.session_state["bill_search_error"] = str(exc)
 
 if st.session_state.get("bill_search_error"):
@@ -326,6 +544,18 @@ if candidate_bills is not None:
                     value=100,
                     help="How many paragraph candidates to retrieve and rerank.",
                 )
+                contextual_reranking = st.checkbox(
+                    "Include bill title in reranker context",
+                    value=False,
+                    help="Adds each paragraph's bill title to the reranker input when available.",
+                )
+                reranker_batch_size = st.number_input(
+                    "Reranker batch size",
+                    min_value=1,
+                    max_value=512,
+                    value=128,
+                    help="Larger batches may use more memory, especially on CPU.",
+                )
                 run_reranking = st.form_submit_button(
                     "Retrieve and rerank paragraphs", type="primary"
                 )
@@ -340,16 +570,23 @@ if candidate_bills is not None:
             if speaker_name:
                 payload["speaker_name"] = speaker_name
             try:
+                candidate_bill_frame = pd.DataFrame({"Affair_ID": affair_ids})
                 with st.spinner("Retrieving paragraphs and applying the reranker…"):
-                    response = requests.post(
-                        f"{service_url}/paragraphs", json=payload, timeout=3600
-                    )
-                    response.raise_for_status()
-                st.session_state["paragraph_pool"] = response.json().get(
-                    "candidate_passages_before_threshold", []
-                )
+                    with state.lock:
+                        before_threshold = query_and_rerank_paragraphs(
+                            retrieval_query=payload["retrieval_query"],
+                            stance_claim=payload["stance_claim"],
+                            paragraph_collection=state.paragraph_store,
+                            candidate_bills=candidate_bill_frame,
+                            reranker=state.reranker,
+                            dense_pool_size=payload["paragraph_dense_pool"],
+                            batch_size=int(reranker_batch_size),
+                            contextual_reranking=contextual_reranking,
+                            speaker_names=[speaker_name] if speaker_name else [],
+                        )
+                st.session_state["paragraph_pool"] = before_threshold.to_dict(orient="records")
                 st.session_state["paragraph_search_error"] = None
-            except requests.RequestException as exc:
+            except Exception as exc:
                 st.session_state["paragraph_search_error"] = str(exc)
         if st.session_state.get("paragraph_search_error"):
             st.error(f"Paragraph retrieval failed: {st.session_state['paragraph_search_error']}")
@@ -365,7 +602,7 @@ if candidate_bills is not None:
                     "Minimum rerank score",
                     min_value=0.0,
                     max_value=1.0,
-                    value=0.40,
+                    value=RERANK_THRESHOLD,
                     step=0.01,
                     help="Move the cutoff to show more or fewer matching paragraphs.",
                 )
