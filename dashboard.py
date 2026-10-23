@@ -26,26 +26,52 @@ from scripts.chroma_store import (
 
 DEFAULT_CLAIM = "Switzerland should pursue a free-trade agreement with the US."
 DEFAULT_LANG = "en"
+DEFAULT_CHROMA_MOUNT_POINT = "hf-bucket"
+
+
+def find_chroma_path() -> tuple[Path | None, list[Path]]:
+    """Locate the Chroma persistence directory in Renku's mounted connector."""
+    configured_path = os.environ.get("CHROMA_PATH")
+    mount_point = Path(os.environ.get("CHROMA_MOUNT_POINT", DEFAULT_CHROMA_MOUNT_POINT))
+    candidates: list[Path] = []
+    if configured_path:
+        candidates.append(Path(configured_path))
+    # Renku mounts connector data relative to the project workspace. The app
+    # code can be nested one or more directories below that workspace.
+    anchors = [Path(__file__).resolve().parent, Path.cwd().resolve()]
+    anchors.extend(Path(__file__).resolve().parents)
+    anchors.extend(Path.cwd().resolve().parents)
+    for anchor in anchors:
+        candidates.extend((anchor / mount_point, anchor / "external_storage" / mount_point))
+    candidates.append(Path(os.environ.get("CHROMA_CACHE_DIR", "/tmp/democrasci-chromadb")))
+
+    searched: list[Path] = []
+    seen: set[Path] = set()
+    for candidate in candidates:
+        candidate = candidate.resolve()
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        searched.append(candidate)
+        if (candidate / "chroma.sqlite3").is_file():
+            return candidate, searched
+        if candidate.is_dir():
+            sqlite_file = next(candidate.rglob("chroma.sqlite3"), None)
+            if sqlite_file is not None:
+                return sqlite_file.parent, searched
+    return None, searched
 
 
 @st.cache_resource(show_spinner="Loading Chroma collections and reranker…")
 def load_dashboard_state() -> DashboardState:
     """Open the local Chroma collections and reranker for this Streamlit app."""
-    chroma_path = Path(os.environ.get("CHROMA_PATH", "/home/renku/work/hf-bucket/"))
-    if not (chroma_path / "chroma.sqlite3").is_file():
-        cache_dir = Path(os.environ.get("CHROMA_CACHE_DIR", "/tmp/democrasci-chromadb"))
-        search_dirs = [chroma_path, cache_dir]
-        sqlite_file = next(
-            (path for directory in search_dirs if directory.exists()
-             for path in directory.rglob("chroma.sqlite3")),
-            None,
+    chroma_path, searched = find_chroma_path()
+    if chroma_path is None:
+        paths = "\n".join(f"- {path}" for path in searched)
+        raise FileNotFoundError(
+            "Could not find chroma.sqlite3. Checked these connector and cache paths:\n" + paths
         )
-        if sqlite_file is None:
-            raise FileNotFoundError(
-                f"No chroma.sqlite3 found in {chroma_path} or downloaded bucket cache {cache_dir}"
-            )
-        chroma_path = sqlite_file.parent
-        os.environ["CHROMA_PATH"] = str(chroma_path)
+    os.environ["CHROMA_PATH"] = str(chroma_path)
     return DashboardState(chroma_path)
 
 
