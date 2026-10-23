@@ -6,6 +6,24 @@ set -u
 api_port="${DEMOCRASCI_API_PORT:-8000}"
 ui_port="${RENKU_SESSION_PORT:-8501}"
 
+# Bind Renku's public port immediately. The bucket download below can take
+# minutes; the App should answer while the local API is being prepared.
+streamlit run dashboard.py \
+  --server.port "$ui_port" \
+  --server.address 0.0.0.0 \
+  --server.headless true &
+ui_pid=$!
+api_pid=""
+
+cleanup() {
+  kill "$ui_pid" 2>/dev/null || true
+  if [[ -n "$api_pid" ]]; then
+    kill "$api_pid" 2>/dev/null || true
+  fi
+  wait 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
+
 # Chroma uses SQLite and local index files, so download the bucket contents to
 # the App's local filesystem instead of opening the database over object storage.
 bucket_id="${HF_CHROMA_BUCKET:-MatteoFasulo/DemocraSci-ChromaDB}"
@@ -62,18 +80,6 @@ export CHROMA_PATH="$chroma_path"
 
 uvicorn model_service:app --host 127.0.0.1 --port "$api_port" &
 api_pid=$!
-
-streamlit run dashboard.py \
-  --server.port "$ui_port" \
-  --server.address 0.0.0.0 \
-  --server.headless true &
-ui_pid=$!
-
-cleanup() {
-  kill "$api_pid" "$ui_pid" 2>/dev/null || true
-  wait "$api_pid" "$ui_pid" 2>/dev/null || true
-}
-trap cleanup EXIT INT TERM
 
 # Stop the container if either service exits.
 wait -n "$api_pid" "$ui_pid"
