@@ -19,7 +19,7 @@ dependencies = [
     "requests>=2.32",
     "safetensors>=0.5",
     "torch>=2.4",
-    "torchvision",
+    "torchvision>=0.29.1",
     "sentence-transformers>=5.3.0",
     "streamlit>=1.40",
     "tqdm>=4.67.3",
