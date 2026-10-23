@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +17,9 @@ from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunct
 from const import EMBEDDING_MODEL
 from data_preprocessing import clean_text, remove_paragraphs
 
-DEFAULT_CHROMA_PATH = Path("/mydata/politperformance/shared/matteof/chromadb")
+DEFAULT_CHROMA_PATH = Path(
+    os.environ.get("CHROMA_PATH", "/mydata/politperformance/shared/matteof/chromadb")
+)
 BILLS_COLLECTION = "DemocraSci_bills"
 PARAGRAPHS_COLLECTION = "DemocraSci_paragraphs"
 DEFAULT_HNSW_EF_SEARCH = 100
