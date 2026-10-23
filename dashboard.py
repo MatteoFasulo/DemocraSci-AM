@@ -29,7 +29,7 @@ DEFAULT_LANG = "en"
 CHROMA_PATH = Path(os.environ.get("CHROMA_PATH", "hf-bucket"))
 HF_BUCKET_SOURCE = os.environ.get(
     "HF_BUCKET_SOURCE",
-    "hf://buckets/MatteoFasulo/DemocraSci-ChromaDB/DemocraSci-ChromaDB/",
+    "hf://buckets/MatteoFasulo/DemocraSci-ChromaDB/",
 )
 
 
