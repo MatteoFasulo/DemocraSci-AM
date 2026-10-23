@@ -24,6 +24,7 @@ from scripts.chroma_store import (
     open_chroma_collections,
 )
 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DEFAULT_CLAIM = "Switzerland should pursue a free-trade agreement with the US."
 DEFAULT_LANG = "en"
 CHROMA_PATH = Path(os.environ.get("CHROMA_PATH", "hf-bucket"))
@@ -54,11 +55,12 @@ def load_dashboard_state() -> DashboardState:
     return DashboardState(CHROMA_PATH)
 
 
-def load_dashboard_reranker(device: torch.device | str | None = None) -> CrossEncoder:
+def load_dashboard_reranker() -> CrossEncoder:
     """Load the cross-encoder used to rerank retrieved speech paragraphs."""
     return CrossEncoder(
         RERANKER_MODEL,
-        device=device,
+        device=DEVICE,
+        model_kwargs={"dtype": torch.float32},
         activation_fn=torch.nn.Sigmoid(),
         prompts={"classification": "Classify whether the document matches the query policy claim"},
         default_prompt_name="classification",
@@ -172,14 +174,13 @@ def query_and_rerank_paragraphs(
 
 class DashboardState:
     def __init__(self, db_path: Path) -> None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.bill_store, self.paragraph_store = open_chroma_collections(
             db_path=db_path,
             bills_name=BILLS_COLLECTION,
             paragraphs_name=PARAGRAPHS_COLLECTION,
-            device=device,
+            device=DEVICE,
         )
-        self.reranker = load_dashboard_reranker(device)
+        self.reranker = load_dashboard_reranker()
         self.lock = threading.Lock()
         self.facets_lock = threading.Lock()
         self._speaker_names: list[str] | None = None
